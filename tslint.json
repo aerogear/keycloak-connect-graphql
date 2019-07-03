@@ -1,0 +1,56 @@
+{
+  "extends": "tslint:recommended",
+  "linterOptions": {
+      "exclude": [
+          "node_modules/**"
+      ]
+  },
+  "rules": {
+    "semicolon": [
+      true,
+      "never"
+    ],
+    "quotemark": [
+      true,
+      "single"
+    ],
+    "max-line-length": [false],
+    "space-before-function-paren": [false, "always"],
+    "only-arrow-functions": [
+      false
+    ],
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "never",
+        "singleline": "never"
+      }
+    ],
+    "arrow-parens": false,
+    "object-literal-sort-keys": false,
+    "object-literal-key-quotes": [
+      false
+    ],
+    "max-classes-per-file": [
+      false
+    ],
+    "ban-types": [
+      false
+    ],
+    "no-console": [
+      true,
+      "log"
+    ],
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-pascal-case",
+      "allow-leading-underscore"
+    ],
+    "interface-name": [
+      false
+    ],
+    "ordered-imports": false
+  }
+}

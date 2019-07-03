@@ -8,3 +8,4 @@ dist
 
 # Build stuff
 coverage
+.nyc_output
