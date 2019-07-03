@@ -1,0 +1,10 @@
+# Node.js stuff
+node_modules
+package-lock.json
+
+# Typescript Stuff
+dist
+*.tsbuildinfo
+
+# Build stuff
+coverage
