@@ -18,7 +18,9 @@
     "compile": "tsc --build tsconfig.json",
     "watch": "tsc --build tsconfig.json --watch",
     "compile:clean": "tsc --build tsconfig.json --clean",
-    "test": "ava -v"
+    "test": "nyc ava -v",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "lint": "tslint '*/*/src/**/*.ts' --exclude 'src/**/*.test.ts' && tslint -c tslint_tests.json 'src/**/*.test.ts'"
   },
   "dependencies": {
     "apollo-server-express": "2.6.7",
@@ -37,11 +39,19 @@
     "@types/node": "10.14.10",
     "@types/pino": "5.20.0",
     "ava": "2.1.0",
-    "ts-node": "8.3.0",
+    "coveralls": "^3.0.4",
+    "nyc": "^14.1.1",
+    "ts-node": "^8.3.0",
+    "tslint": "^5.18.0",
     "typescript": "3.5.2"
   },
   "peerDependencies": {
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
   },
   "ava": {
     "compileEnhancements": false,

@@ -1,0 +1,11 @@
+{
+  "extends": "./tslint.json",
+  "rules": {
+    "no-shadowed-variable": [
+      true,
+      {
+        "temporalDeadZone": false
+      }
+    ]
+  }
+}
