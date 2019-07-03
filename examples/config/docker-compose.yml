@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  keycloak:
+    image: jboss/keycloak:3.4.3.Final
+    ports:
+      - "8080:8080"
+    environment:
+      DB_VENDOR: h2
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
