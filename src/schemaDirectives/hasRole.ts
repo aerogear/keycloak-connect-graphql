@@ -3,6 +3,7 @@ import { defaultFieldResolver, GraphQLSchema } from 'graphql'
 import { SchemaDirectiveVisitor } from 'graphql-tools'
 import Joi from 'joi'
 import pino from 'pino' // also need to figure out where this comes from
+import { directiveResolvers } from './directiveResolvers'
 
 import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
 
@@ -31,35 +32,7 @@ export class HasRoleDirective extends SchemaDirectiveVisitor {
 
     const { roles } = value
 
-    field.resolve = async function (root: any, args: any, context: any, info: any) {
-      log.info(`checking user is authorized to access ${field.name} on parent ${info.parentType.name}. Must have one of [${roles}]`)
-
-      if (!context.auth || !context.auth.isAuthenticated()) {
-        const AuthorizationErrorMessage = `Unable to find authentication. Authorization is required for field ${field.name} on parent ${info.parentType.name}. Must have one of the following roles: [${roles}]`
-        log.error({ error: AuthorizationErrorMessage })
-        throw new ForbiddenError(AuthorizationErrorMessage)
-      }
-
-      const token = context.auth.accessToken
-
-      let foundRole = null // this will be the role the user was successfully authorized on
-
-      foundRole = roles.find((role: string) => {
-        return context.auth.hasRole(role)
-      })
-
-      if (!foundRole) {
-        const AuthorizationErrorMessage = `user is not authorized for field ${field.name} on parent ${info.parentType.name}. Must have one of the following roles: [${roles}]`
-        log.error({ error: AuthorizationErrorMessage, details: token.content })
-        throw new ForbiddenError(AuthorizationErrorMessage)
-      }
-
-      log.info(`user successfully authorized with role: ${foundRole}`)
-
-      // Return appropriate error if this is false
-      const result = await resolve.apply(this, [root, args, context, info])
-      return result
-    }
+    field.resolve = directiveResolvers.hasRole(roles)(resolve)
   }
 
   public validateArgs () {

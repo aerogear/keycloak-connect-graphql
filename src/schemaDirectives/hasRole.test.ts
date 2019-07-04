@@ -143,7 +143,7 @@ test('if there is no authentication, then an error is returned and the original 
 
   await t.throwsAsync(async () => {
     await field.resolve(root, args, context, info)
-  }, `Unable to find authentication. Authorization is required for field ${field.name} on parent ${info.parentType.name}. Must have one of the following roles: [${directiveArgs.role}]`)
+  }, `User not Authenticated`)
 })
 
 test('if token does not have the required role, then an error is returned and the original resolver will not execute', async (t) => {
@@ -159,8 +159,7 @@ test('if token does not have the required role, then an error is returned and th
         t.fail('the original resolver should never be called when an auth error is thrown')
         return reject(new Error('the original resolver should never be called when an auth error is thrown'))
       })
-    },
-    name: 'testField'
+    }
   }
 
   directive.visitFieldDefinition(field)
@@ -185,6 +184,7 @@ test('if token does not have the required role, then an error is returned and th
   }
 
   const info = {
+    fieldName: 'testField',
     parentType: {
       name: 'testParent'
     }
@@ -192,7 +192,7 @@ test('if token does not have the required role, then an error is returned and th
 
   await t.throwsAsync(async () => {
     await field.resolve(root, args, context, info)
-  }, `user is not authorized for field ${field.name} on parent ${info.parentType.name}. Must have one of the following roles: [${directiveArgs.role}]`)
+  }, `User is not authorized. Must have one of the following roles: [${directiveArgs.role}]`)
 })
 
 test('if hasRole arguments are invalid, visitSchemaDirective does not throw, but field.resolve will return a generic error to the user and original resolver will not be called', async (t) => {
