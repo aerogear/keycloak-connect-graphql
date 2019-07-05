@@ -1,5 +1,4 @@
-import { HasRoleDirective } from './hasRole'
-import { AuthDirective } from './auth'
+import { HasRoleDirective, AuthDirective } from './schemaDirectiveVisitors'
 
 export const schemaDirectives = {
   auth: AuthDirective,

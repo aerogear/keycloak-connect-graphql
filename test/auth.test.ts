@@ -3,10 +3,9 @@ import sinon from 'sinon'
 
 import { GraphQLSchema } from 'graphql'
 import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
-import { AuthDirective } from '../src/schemaDirectives/auth'
+import { AuthDirective } from '../src/directives/schemaDirectiveVisitors'
 
 import { KeycloakAuthContextProvider } from '../src/AuthContextProvider'
-import { spawnSync } from 'child_process';
 
 const createHasRoleDirective = () => {
   return new AuthDirective({
