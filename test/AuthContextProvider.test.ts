@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { KeycloakAuthContextProvider } from './AuthContextProvider'
+import { KeycloakAuthContextProvider } from '../src/AuthContextProvider'
 
 test('AuthContextProvider accessToken is the access_token in req.kauth', (t) => {
 
