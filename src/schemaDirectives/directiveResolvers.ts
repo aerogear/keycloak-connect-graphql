@@ -1,4 +1,10 @@
 export const directiveResolvers = {
+  auth: (next: Function) => (root: any, args: any, context: any, info: any) => {
+    if (!context.auth || !context.auth.isAuthenticated()) {
+      throw new Error(`User not Authenticated`)
+    }
+    return next(root, args, context, info)
+  },
   hasRole: (roles: Array<string>) => (next: Function) => (root: any, args: any, context: any, info: any) => {
     if (!context.auth || !context.auth.isAuthenticated()) {
       throw new Error(`User not Authenticated`)

@@ -33,7 +33,8 @@ export class KeycloakSecurityService implements SecurityService {
   }
 
   public getTypeDefs(): string {
-    return 'directive @hasRole(role: [String]) on FIELD | FIELD_DEFINITION'
+    return `directive @hasRole(role: [String]) on FIELD | FIELD_DEFINITION
+    directive @auth on FIELD | FIELD_DEFINITION`
   }
 
   public getSchemaDirectives (): SchemaDirectives {

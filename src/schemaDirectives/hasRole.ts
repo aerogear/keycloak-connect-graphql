@@ -1,13 +1,8 @@
-import { ForbiddenError } from 'apollo-server-express'
 import { defaultFieldResolver, GraphQLSchema } from 'graphql'
 import { SchemaDirectiveVisitor } from 'graphql-tools'
 import Joi from 'joi'
-import pino from 'pino' // also need to figure out where this comes from
 import { directiveResolvers } from './directiveResolvers'
-
 import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
-
-const log = pino()
 
 export class HasRoleDirective extends SchemaDirectiveVisitor {
 
@@ -26,7 +21,6 @@ export class HasRoleDirective extends SchemaDirectiveVisitor {
     const { resolve = defaultFieldResolver } = field
     const { error, value } = this.validateArgs()
     if (error) {
-      log.error(`Invalid hasRole directive on field ${field.name}`, error)
       throw error
     }
 

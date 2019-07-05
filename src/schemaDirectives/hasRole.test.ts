@@ -43,6 +43,9 @@ test('context.auth.hasRole() is called', async (t) => {
             t.pass()
             t.deepEqual(role, directiveArgs.role)
             return true
+          },
+          isExpired: () => {
+            return false
           }
         }
       }
@@ -89,6 +92,9 @@ test('visitFieldDefinition accepts an array of roles', async (t) => {
             t.log(`checking has role ${role}`)
             t.pass()
             return (role === 'baz') // this makes sure it doesn't return true instantly
+          },
+          isExpired: () => {
+            return false
           }
         }
       }
@@ -173,6 +179,9 @@ test('if token does not have the required role, then an error is returned and th
           hasRole: (role: string) => {
             t.deepEqual(role, directiveArgs.role)
             return false
+          },
+          isExpired: () => {
+            return false
           }
         }
       }
@@ -245,6 +254,9 @@ test('context.auth.hasRole() works even if request is not supplied in context', 
             t.pass()
             t.deepEqual(role, directiveArgs.role)
             return true
+          },
+          isExpired: () => {
+            return false
           }
         }
       }
