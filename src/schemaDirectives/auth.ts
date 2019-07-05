@@ -7,7 +7,6 @@ export class AuthDirective extends SchemaDirectiveVisitor {
 
   constructor (config: {
       name: string
-      args: { [name: string]: any }
       visitedType: VisitableSchemaType
       schema: GraphQLSchema
       context: { [key: string]: any }
