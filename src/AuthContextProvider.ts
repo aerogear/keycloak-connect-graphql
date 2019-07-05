@@ -8,7 +8,7 @@ export class KeycloakAuthContextProvider implements AuthContextProvider {
   constructor ({ req }: { req: any }) {
     this.request = req
     this.accessToken = (req && req.kauth && req.kauth.grant) ? req.kauth.grant.access_token : undefined
-    this.authenticated = !!((req && req.kauth && req.kauth.grant) ? req.kauth.grant.access_token : undefined)
+    this.authenticated = this.accessToken && !this.accessToken.isExpired()
   }
 
   public isAuthenticated (): boolean {
