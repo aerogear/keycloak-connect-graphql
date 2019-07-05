@@ -54,6 +54,9 @@
   "nyc": {
     "extension": [
       ".ts"
+    ],
+    "include": [
+      "src/**/*.ts"
     ]
   },
   "ava": {
