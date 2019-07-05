@@ -2,7 +2,7 @@ import test from 'ava'
 
 import { GraphQLSchema } from 'graphql'
 import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
-import { HasRoleDirective } from '../src/schemaDirectives/hasRole'
+import { HasRoleDirective } from '../src/directives/schemaDirectiveVisitors'
 
 import { KeycloakAuthContextProvider } from '../src/AuthContextProvider'
 
