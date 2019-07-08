@@ -5,7 +5,7 @@ import { GraphQLSchema } from 'graphql'
 import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
 import { AuthDirective } from '../src/directives/schemaDirectiveVisitors'
 
-import { KeycloakAuthContextProvider } from '../src/AuthContextProvider'
+import { KeycloakContextProvider } from '../src/KeycloakContextProvider'
 
 const createHasRoleDirective = () => {
   return new AuthDirective({
@@ -45,7 +45,7 @@ test('happy path: context.auth.isAuthenticated() is called, then original resolv
   }
   const context = {
     request: req,
-    auth: new KeycloakAuthContextProvider({ req })
+    auth: new KeycloakContextProvider({ req })
   }
 
   const isAuthenticatedSpy = sinon.spy(context.auth, 'isAuthenticated')
