@@ -4,7 +4,7 @@ const express = require('express')
 const session = require('express-session')
 const Keycloak = require('keycloak-connect')
 
-const { KeycloakContextProvider, KeycloakTypeDefs, schemaDirectives } = require('../')
+const { KeycloakContextProvider, KeycloakTypeDefs, KeycloakSchemaDirectives } = require('../')
 
 const { ApolloServer, gql } = require('apollo-server-express')
 
@@ -60,7 +60,7 @@ const resolvers = {
 
 const server = new ApolloServer({
   typeDefs: [KeycloakTypeDefs, typeDefs],
-  schemaDirectives: schemaDirectives,
+  schemaDirectives: KeycloakSchemaDirectives,
   resolvers,
   context: ({ req }) => {
     return {
