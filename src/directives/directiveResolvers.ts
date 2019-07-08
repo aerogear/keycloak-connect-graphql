@@ -10,6 +10,10 @@ export const hasRole = (roles: Array<string>) => (next: Function) => (root: any,
     throw new Error(`User not Authenticated`)
   }
 
+  if (typeof roles === 'string') {
+    roles = [roles]
+  }
+
   let foundRole = null // this will be the role the user was successfully authorized on
 
   foundRole = roles.find((role: string) => {

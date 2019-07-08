@@ -1,6 +1,6 @@
 import { AuthContextProvider } from './api'
 
-export class KeycloakAuthContextProvider implements AuthContextProvider {
+export class KeycloakContextProvider implements AuthContextProvider {
   public readonly request: any
   public readonly accessToken: any
   public readonly authenticated: boolean
