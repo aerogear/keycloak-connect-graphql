@@ -5,7 +5,7 @@ const session = require('express-session')
 const Keycloak = require('keycloak-connect')
 const { ApolloServer, gql } = require('apollo-server-express')
 
-const { KeycloakContextProvider, KeycloakTypeDefs, schemaDirectives } = require('../')
+const { KeycloakContextProvider, KeycloakTypeDefs, KeycloakSchemaDirectives } = require('../')
 
 const app = express()
 
@@ -65,7 +65,7 @@ const resolvers = {
 // Initialize the voyager server with our schema and context
 const options ={
   typeDefs: [KeycloakTypeDefs, typeDefs],
-  schemaDirectives: schemaDirectives,
+  schemaDirectives: KeycloakSchemaDirectives,
   resolvers,
   context: ({ req }) => {
     return {
