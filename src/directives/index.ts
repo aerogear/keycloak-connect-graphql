@@ -1,6 +1,8 @@
+export * from './directiveResolvers'
+
 import { HasRoleDirective, AuthDirective } from './schemaDirectiveVisitors'
 
-export const schemaDirectives = {
+export const KeycloakSchemaDirectives = {
   auth: AuthDirective,
   hasRole: HasRoleDirective
 }

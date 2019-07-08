@@ -3,14 +3,9 @@ const path = require('path')
 const express = require('express')
 const session = require('express-session')
 const Keycloak = require('keycloak-connect')
-
-const { KeycloakSecurityService } = require('../')
-
 const { ApolloServer, gql } = require('apollo-server-express')
 
-const keycloakConfigPath = process.env.KEYCLOAK_CONFIG || path.resolve(__dirname, './config/keycloak.json')
-const keycloakConfig = JSON.parse(fs.readFileSync(keycloakConfigPath))
-
+const { KeycloakContextProvider, KeycloakTypeDefs, schemaDirectives } = require('../')
 
 const app = express()
 
@@ -25,6 +20,8 @@ app.use(session({
   saveUninitialized: true,
   store: memoryStore
 }))
+
+const keycloakConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, './config/keycloak.json')))
 
 const keycloak = new Keycloak({
   store: memoryStore
@@ -65,19 +62,14 @@ const resolvers = {
   }
 }
 
-// Initialize the keycloak service
-const keycloakService = new KeycloakSecurityService(keycloakConfig, { keycloak })
-
-const AuthContextProvider = keycloakService.getAuthContextProvider()
-
 // Initialize the voyager server with our schema and context
 const options ={
-  typeDefs: [keycloakService.getTypeDefs(), typeDefs],
-  schemaDirectives: keycloakService.getSchemaDirectives(),
+  typeDefs: [KeycloakTypeDefs, typeDefs],
+  schemaDirectives: schemaDirectives,
   resolvers,
   context: ({ req }) => {
     return {
-      auth: new AuthContextProvider({ req })
+      auth: new KeycloakContextProvider({ req })
     }
   }
 }

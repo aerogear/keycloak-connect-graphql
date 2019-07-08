@@ -3,12 +3,9 @@ const path = require('path')
 const express = require('express')
 const session = require('express-session')
 const Keycloak = require('keycloak-connect')
-
-const { KeycloakContextProvider, KeycloakTypeDefs, schemaDirectives } = require('../')
-
 const { ApolloServer, gql } = require('apollo-server-express')
 
-const keycloakConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, './config/keycloak.json')))
+const { KeycloakContextProvider, KeycloakTypeDefs, auth, hasRole } = require('../')
 
 const app = express()
 
@@ -24,6 +21,8 @@ app.use(session({
   store: memoryStore
 }))
 
+const keycloakConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, './config/keycloak.json')))
+
 const keycloak = new Keycloak({
   store: memoryStore
 }, keycloakConfig)
@@ -35,39 +34,46 @@ app.use(keycloak.middleware({
 
 // Protect the main route for all graphql services
 // Disable unauthenticated access
-app.use(graphqlPath, keycloak.protect())
+app.use(graphqlPath, keycloak.middleware())
 
 const typeDefs = gql`
   type Query {
-    hello: String @hasRole(role: "developer")
+    greetings: [String]!
+  }
+
+  type Mutation {
+    addGreeting(greeting: String!): String!
   }
 `
 
+const greetings = [
+  'hello world!'
+]
+
 const resolvers = {
   Query: {
-    hello: (obj, args, context, info) => {
-      // log some of the auth related info added to the context
-      console.log(context.auth.isAuthenticated())
-      console.log(context.auth.accessToken.content.name)
-
-      const name = context.auth.accessToken.content.preferred_username || 'world'
-      return `Hello ${name}`
-    }
+    greetings: () => greetings
+  },
+  Mutation: {
+    addGreeting: auth(hasRole('developer')((obj, { greeting }, context, info) => {
+      greetings.push(greeting)
+      return greeting
+    }))
   }
 }
 
 // Initialize the voyager server with our schema and context
-
-const server = new ApolloServer({
+const options ={
   typeDefs: [KeycloakTypeDefs, typeDefs],
-  schemaDirectives: schemaDirectives,
   resolvers,
   context: ({ req }) => {
     return {
       auth: new KeycloakContextProvider({ req })
     }
   }
-})
+}
+
+const server = new ApolloServer(options)
 
 server.applyMiddleware({ app })
 
@@ -75,4 +81,4 @@ const port = 4000
 
 app.listen({ port }, () =>
   console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`)
-)
+) 
