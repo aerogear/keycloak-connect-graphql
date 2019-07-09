@@ -18,7 +18,7 @@ const graphqlPath = '/graphql'
 
 
 app.use(session({
-  secret: 'secret',
+  secret: process.env.SESSION_SECRET_STRING || 'this should be a long secret',
   resave: false,
   saveUninitialized: true,
   store: memoryStore
