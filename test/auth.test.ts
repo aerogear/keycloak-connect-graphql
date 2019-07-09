@@ -5,7 +5,7 @@ import { GraphQLSchema } from 'graphql'
 import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
 import { AuthDirective } from '../src/directives/schemaDirectiveVisitors'
 
-import { KeycloakContextProvider } from '../src/KeycloakContextProvider'
+import { KeycloakContext } from '../src/KeycloakContext'
 
 const createHasRoleDirective = () => {
   return new AuthDirective({
@@ -16,7 +16,7 @@ const createHasRoleDirective = () => {
   })
 }
 
-test('happy path: context.auth.isAuthenticated() is called, then original resolver is called', async (t) => {
+test('happy path: context.kauth.isAuthenticated() is called, then original resolver is called', async (t) => {
   const directive = createHasRoleDirective()
 
   const field = {
@@ -45,10 +45,10 @@ test('happy path: context.auth.isAuthenticated() is called, then original resolv
   }
   const context = {
     request: req,
-    auth: new KeycloakContextProvider({ req })
+    kauth: new KeycloakContext({ req })
   }
 
-  const isAuthenticatedSpy = sinon.spy(context.auth, 'isAuthenticated')
+  const isAuthenticatedSpy = sinon.spy(context.kauth, 'isAuthenticated')
 
   const info = {
     parentType: {
@@ -62,7 +62,7 @@ test('happy path: context.auth.isAuthenticated() is called, then original resolv
   t.truthy(resolverSpy.called)
 })
 
-test('resolver will throw if context.auth is not present', async (t) => {
+test('resolver will throw if context.kauth is not present', async (t) => {
   const directive = createHasRoleDirective()
 
   const field = {
@@ -102,7 +102,7 @@ test('resolver will throw if context.auth is not present', async (t) => {
   }, 'User not Authenticated')
 })
 
-test('resolver will throw if context.auth present but context.auth.isAuthenticated returns false', async (t) => {
+test('resolver will throw if context.kauth present but context.kauth.isAuthenticated returns false', async (t) => {
   const directive = createHasRoleDirective()
 
   const field = {
@@ -120,7 +120,7 @@ test('resolver will throw if context.auth present but context.auth.isAuthenticat
 
   const context = {
     request: req,
-    auth: {
+    kauth: {
       isAuthenticated: () => false
     }
   }

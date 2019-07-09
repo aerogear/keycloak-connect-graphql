@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { KeycloakContextProvider } from '../src/KeycloakContextProvider'
+import { KeycloakContext } from '../src/KeycloakContext'
 
 test('AuthContextProvider accessToken is the access_token in req.kauth', (t) => {
 
@@ -19,7 +19,7 @@ test('AuthContextProvider accessToken is the access_token in req.kauth', (t) => 
     }
   }
 
-  const provider = new KeycloakContextProvider({ req })
+  const provider = new KeycloakContext({ req })
   t.deepEqual(provider.accessToken, req.kauth.grant.access_token)
 })
 
@@ -41,7 +41,7 @@ test('AuthContextProvider hasRole calls hasRole in the access_token', (t) => {
     }
   }
 
-  const provider = new KeycloakContextProvider({ req })
+  const provider = new KeycloakContext({ req })
   t.truthy(provider.hasRole(''))
 })
 
@@ -61,7 +61,7 @@ test('AuthContextProvider.isAuthenticated is true when token is defined and isEx
     }
   }
 
-  const provider = new KeycloakContextProvider({ req })
+  const provider = new KeycloakContext({ req })
   t.truthy(provider.isAuthenticated())
 })
 
@@ -81,7 +81,7 @@ test('AuthContextProvider.isAuthenticated is false when token is defined but isE
     }
   }
 
-  const provider = new KeycloakContextProvider({ req })
+  const provider = new KeycloakContext({ req })
   t.false(provider.isAuthenticated())
 })
 
@@ -101,6 +101,6 @@ test('AuthContextProvider.hasRole is false if token is expired', (t) => {
     }
   }
 
-  const provider = new KeycloakContextProvider({ req })
+  const provider = new KeycloakContext({ req })
   t.false(provider.hasRole(''))
 })

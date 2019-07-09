@@ -4,7 +4,7 @@ import { GraphQLSchema } from 'graphql'
 import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
 import { HasRoleDirective } from '../src/directives/schemaDirectiveVisitors'
 
-import { KeycloakContextProvider } from '../src/KeycloakContextProvider'
+import { KeycloakContext } from '../src/KeycloakContext'
 
 const createHasRoleDirective = (directiveArgs: any) => {
   return new HasRoleDirective({
@@ -53,7 +53,7 @@ test('context.auth.hasRole() is called', async (t) => {
   }
   const context = {
     request: req,
-    auth: new KeycloakContextProvider({ req })
+    kauth: new KeycloakContext({ req })
   }
 
   const info = {
@@ -102,7 +102,7 @@ test('visitFieldDefinition accepts an array of roles', async (t) => {
   }
   const context = {
     request: req,
-    auth: new KeycloakContextProvider({ req })
+    kauth: new KeycloakContext({ req })
   }
 
   const info = {
@@ -138,7 +138,7 @@ test('if there is no authentication, then an error is returned and the original 
   const req = {}
   const context = {
     request: req,
-    auth: new KeycloakContextProvider({ req })
+    kauth: new KeycloakContext({ req })
   }
 
   const info = {
@@ -189,7 +189,7 @@ test('if token does not have the required role, then an error is returned and th
   }
   const context = {
     request: req,
-    auth: new KeycloakContextProvider({ req })
+    kauth: new KeycloakContext({ req })
   }
 
   const info = {
@@ -263,7 +263,7 @@ test('context.auth.hasRole() works even if request is not supplied in context', 
     }
   }
   const context = {
-    auth: new KeycloakContextProvider({ req })
+    kauth: new KeycloakContext({ req })
   }
 
   const info = {

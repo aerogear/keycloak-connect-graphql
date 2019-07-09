@@ -4,7 +4,7 @@ const express = require('express')
 const session = require('express-session')
 const Keycloak = require('keycloak-connect')
 
-const { KeycloakContextProvider, KeycloakTypeDefs, KeycloakSchemaDirectives } = require('../')
+const { KeycloakContext, KeycloakTypeDefs, KeycloakSchemaDirectives } = require('../')
 
 const { ApolloServer, gql } = require('apollo-server-express')
 
@@ -47,10 +47,10 @@ const resolvers = {
   Query: {
     hello: (obj, args, context, info) => {
       // log some of the auth related info added to the context
-      console.log(context.auth.isAuthenticated())
-      console.log(context.auth.accessToken.content.name)
+      console.log(context.kauth.isAuthenticated())
+      console.log(context.kauth.accessToken.content.name)
 
-      const name = context.auth.accessToken.content.preferred_username || 'world'
+      const name = context.kauth.accessToken.content.preferred_username || 'world'
       return `Hello ${name}`
     }
   }
@@ -64,7 +64,7 @@ const server = new ApolloServer({
   resolvers,
   context: ({ req }) => {
     return {
-      auth: new KeycloakContextProvider({ req })
+      kauth: new KeycloakContext({ req })
     }
   }
 })
