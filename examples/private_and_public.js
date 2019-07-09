@@ -5,7 +5,7 @@ const session = require('express-session')
 const Keycloak = require('keycloak-connect')
 const { ApolloServer, gql } = require('apollo-server-express')
 
-const { KeycloakContextProvider, KeycloakTypeDefs, KeycloakSchemaDirectives } = require('../')
+const { KeycloakContext, KeycloakTypeDefs, KeycloakSchemaDirectives } = require('../')
 
 const app = express()
 
@@ -69,7 +69,7 @@ const options ={
   resolvers,
   context: ({ req }) => {
     return {
-      auth: new KeycloakContextProvider({ req })
+      kauth: new KeycloakContext({ req })
     }
   }
 }
