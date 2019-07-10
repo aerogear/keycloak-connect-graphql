@@ -15,6 +15,7 @@ export class KeycloakContext implements AuthContextProvider {
   }
 
   public hasRole (role: string): boolean {
-    return ((this.accessToken && !this.accessToken.isExpired()) && this.accessToken.hasRole(role)) ? true : false
+    //@ts-ignore
+    return this.isAuthenticated() && this.accessToken.hasRole(role)
   }
 }
