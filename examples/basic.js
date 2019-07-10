@@ -34,8 +34,6 @@ const resolvers = {
   }
 }
 
-// Initialize the voyager server with our schema and context
-
 const server = new ApolloServer({
   typeDefs: [KeycloakTypeDefs, typeDefs],
   schemaDirectives: KeycloakSchemaDirectives,

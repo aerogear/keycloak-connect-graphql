@@ -41,7 +41,6 @@ const resolvers = {
   }
 }
 
-// Initialize the voyager server with our schema and context
 const options ={
   typeDefs: [KeycloakTypeDefs, typeDefs],
   resolvers,
