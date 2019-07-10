@@ -98,7 +98,7 @@ test('the token object will have hasRole, hasRealmRole and hasPermissions if the
   const subscriptionHandler = new KeycloakSubscriptionHandler({ keycloak: stubKeycloak })
   const connectionParams = { Authorization: tokenString, clientId: 'voyager-testing' }
 
-  const token: Token = await subscriptionHandler.onSubscriptionConnect(connectionParams, {}, {})
+  const token = await subscriptionHandler.onSubscriptionConnect(connectionParams, {}, {}) as Token
   t.truthy(token instanceof Token)
   t.truthy(token.hasRole('tester'))
 })
