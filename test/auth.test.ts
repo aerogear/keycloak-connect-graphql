@@ -1,6 +1,7 @@
 import test from 'ava'
 import sinon from 'sinon'
 
+import Keycloak from 'keycloak-connect'
 import { GraphQLSchema } from 'graphql'
 import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
 import { AuthDirective } from '../src/directives/schemaDirectiveVisitors'
@@ -42,7 +43,8 @@ test('happy path: context.kauth.isAuthenticated() is called, then original resol
         }
       }
     }
-  }
+  } as Keycloak.GrantedRequest
+
   const context = {
     request: req,
     kauth: new KeycloakContext({ req })
@@ -86,7 +88,8 @@ test('resolver will throw if context.kauth is not present', async (t) => {
         }
       }
     }
-  }
+  } as Keycloak.GrantedRequest
+
   const context = {
     request: req
   }
@@ -116,7 +119,7 @@ test('resolver will throw if context.kauth present but context.kauth.isAuthentic
 
   const root = {}
   const args = {}
-  const req = {}
+  const req = {} as Keycloak.GrantedRequest
 
   const context = {
     request: req,

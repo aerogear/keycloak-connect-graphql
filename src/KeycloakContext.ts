@@ -1,21 +1,20 @@
 import { AuthContextProvider } from './api'
+import Keycloak from 'keycloak-connect'
 
 export class KeycloakContext implements AuthContextProvider {
-  public readonly request: any
-  public readonly accessToken: any
-  public readonly authenticated: boolean
+  public readonly request: Keycloak.GrantedRequest
+  public readonly accessToken: Keycloak.Token | undefined
 
-  constructor ({ req }: { req: any }) {
+  constructor ({ req }: { req: Keycloak.GrantedRequest }) {
     this.request = req
     this.accessToken = (req && req.kauth && req.kauth.grant) ? req.kauth.grant.access_token : undefined
-    this.authenticated = this.accessToken && !this.accessToken.isExpired()
   }
 
   public isAuthenticated (): boolean {
-    return this.authenticated
+    return (this.accessToken && !this.accessToken.isExpired()) ? true : false 
   }
 
   public hasRole (role: string): boolean {
-    return this.isAuthenticated() && this.accessToken.hasRole(role)
+    return ((this.accessToken && !this.accessToken.isExpired()) && this.accessToken.hasRole(role)) ? true : false
   }
 }
