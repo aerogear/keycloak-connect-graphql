@@ -1,12 +1,10 @@
+import Keycloak from './KeycloakTypings'
 import { Token } from './KeycloakToken'
 import { KeycloakSubscriptionHandlerOptions } from './api'
 
 export class KeycloakSubscriptionHandler {
 
-  public readonly keycloakConfig: any
-  public readonly schemaDirectives: any
-  public readonly authContextProvider: any
-  public keycloak: any
+  public keycloak: Keycloak.Keycloak
 
   constructor (options: KeycloakSubscriptionHandlerOptions) {
     if (!options.keycloak) {
