@@ -1,3 +1,5 @@
+import Keycloak from '../KeycloakTypings'
+
 export interface KeycloakSubscriptionHandlerOptions {
-  keycloak: any
+  keycloak: Keycloak.Keycloak
 }
