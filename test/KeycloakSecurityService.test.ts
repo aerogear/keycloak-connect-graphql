@@ -1,4 +1,5 @@
 import test from 'ava'
+import Keycloak from '../src/KeycloakTypings'
 
 import { KeycloakSubscriptionHandler } from '../src/KeycloakSubscriptionHandler'
 import { Token } from '../src/KeycloakToken';
@@ -12,7 +13,7 @@ test('onSubscriptionConnect throws if no connectionParams Provided', async t => 
         })
       }
     }
-  }
+  } as unknown as Keycloak.Keycloak
 
   const securityService = new KeycloakSubscriptionHandler({ keycloak: stubKeycloak })
 
@@ -30,7 +31,7 @@ test('onSubscriptionConnect throws if no connectionParams is not an object', asy
         })
       }
     }
-  }
+  } as unknown as Keycloak.Keycloak
 
   const securityService = new KeycloakSubscriptionHandler({ keycloak: stubKeycloak })
   const connectionParams = 'not an object'
@@ -49,7 +50,7 @@ test('onSubscriptionConnect throws if no Auth provided', async t => {
         })
       }
     }
-  }
+  } as unknown as Keycloak.Keycloak
 
   const securityService = new KeycloakSubscriptionHandler({ keycloak: stubKeycloak })
   const connectionParams = { Authorization: undefined }
@@ -68,7 +69,7 @@ test('onSubscriptionConnect returns a token Object if the keycloak library consi
         })
       }
     }
-  }
+  } as unknown as Keycloak.Keycloak
 
   const tokenString = 'Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJfa29BTUtBcW1xQjcxazNGeDdBQ0xvNXZqMXNoWVZwSkdJM2FScFl4allZIn0.eyJqdGkiOiJjN2UyMzA0NS00NGVmLTQ1ZDItOGY0Yy1jODA4OTlhYzljYzIiLCJleHAiOjE1NTc5NjcxMjQsIm5iZiI6MCwiaWF0IjoxNTU3OTMxMTI0LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXV0aC9yZWFsbXMvdm95YWdlci10ZXN0aW5nIiwiYXVkIjoidm95YWdlci10ZXN0aW5nIiwic3ViIjoiM2Y4MDRiNWEtM2U3Ni00YzI2LTk4ZTYtNDU1ZDNlMzUzZmY3IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidm95YWdlci10ZXN0aW5nIiwiYXV0aF90aW1lIjoxNTU3OTMxMTI0LCJzZXNzaW9uX3N0YXRlIjoiOThiNTM2ODAtODU5MC00MzFmLWFiNzctMDY0MDFmODgzYTY5IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInByZWZlcnJlZF91c2VybmFtZSI6ImRldmVsb3BlciJ9.iF3WdY6hwlZIX2bq40fs0GhxG991TqtBEuKbX7A8DMfgOj2QFDyNHGLVzEiJqMal44pmhlWhtOSoVp77ZZ57HdatEYqYaTnc8C8ajA8A1yxOX81D0lFu2jmC3WpKS2H0prrjdPPZyf82YpbYuwYAyiKJMpJSiRC2fGk1Owsg9O6CSj8cFbKfrS4msE1Y90S84qwrDfRYFSFFdsmeTvC71qyj4ZhNqNfPWbIwymlnYJ6xYbmTrZBv2GktXBLd0BnSu5QFoHgjiCxG3cyFV4tCIBpvWjebI6rCUehD6TTIXiW4uVOp9YPWvyZH8WznFdtq36CDb51abWJ8EUquog7M1w'
 
@@ -88,7 +89,7 @@ test('the token object will have hasRole, hasRealmRole and hasPermissions if the
         })
       }
     }
-  }
+  } as unknown as Keycloak.Keycloak
 
   // hardcoded token object that can be used for quick unit testing
   // works with a clientId called 'voyager-testing' and has a client role 'tester'
@@ -112,7 +113,7 @@ test('If the keycloak token validation fails, then onSubscriptionConnect will th
         })
       }
     }
-  }
+  } as unknown as Keycloak.Keycloak
 
   // hardcoded token object that can be used for quick unit testing
   // works with a clientId called 'voyager-testing' and has a client role 'tester'
