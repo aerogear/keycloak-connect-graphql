@@ -74,8 +74,6 @@ const httpServer = app.listen({ port }, () => {
   console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`)
 
   // Initialize the keycloak subscription handler passing in our keycloak instance
-  // protect: false means that subscriptions will not fail
-  // if the token is not provided by the client in connectionParams
   const keycloakSubscriptionHandler = new KeycloakSubscriptionHandler({ keycloak })
   new SubscriptionServer({
     execute,
