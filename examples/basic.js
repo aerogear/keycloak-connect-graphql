@@ -1,41 +1,19 @@
-const fs = require('fs')
-const path = require('path')
 const express = require('express')
-const session = require('express-session')
-const Keycloak = require('keycloak-connect')
-
-const { KeycloakContext, KeycloakTypeDefs, KeycloakSchemaDirectives } = require('../')
-
 const { ApolloServer, gql } = require('apollo-server-express')
+const { configureKeycloak } = require('./common')
 
-const keycloakConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, './config/keycloak.json')))
+const {
+  KeycloakContext,
+  KeycloakTypeDefs,
+  KeycloakSchemaDirectives
+} = require('../')
 
 const app = express()
 
-const memoryStore = new session.MemoryStore()
-
 const graphqlPath = '/graphql'
 
-
-app.use(session({
-  secret: process.env.SESSION_SECRET_STRING || 'this should be a long secret',
-  resave: false,
-  saveUninitialized: true,
-  store: memoryStore
-}))
-
-const keycloak = new Keycloak({
-  store: memoryStore
-}, keycloakConfig)
-
-// Install general keycloak middleware
-app.use(keycloak.middleware({
-  admin: graphqlPath
-}))
-
-// Protect the main route for all graphql services
-// Disable unauthenticated access
-app.use(graphqlPath, keycloak.protect())
+// perform the standard keycloak-connect middleware setup on our app
+configureKeycloak(app, graphqlPath)
 
 const typeDefs = gql`
   type Query {
