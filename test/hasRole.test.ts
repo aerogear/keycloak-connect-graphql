@@ -1,5 +1,6 @@
 import test from 'ava'
 
+import Keycloak from 'keycloak-connect'
 import { GraphQLSchema } from 'graphql'
 import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
 import { HasRoleDirective } from '../src/directives/schemaDirectiveVisitors'
@@ -50,7 +51,8 @@ test('context.auth.hasRole() is called', async (t) => {
         }
       }
     }
-  }
+  } as Keycloak.GrantedRequest
+
   const context = {
     request: req,
     kauth: new KeycloakContext({ req })
@@ -99,7 +101,8 @@ test('visitFieldDefinition accepts an array of roles', async (t) => {
         }
       }
     }
-  }
+  } as Keycloak.GrantedRequest
+
   const context = {
     request: req,
     kauth: new KeycloakContext({ req })
@@ -135,7 +138,7 @@ test('if there is no authentication, then an error is returned and the original 
 
   const root = {}
   const args = {}
-  const req = {}
+  const req = {} as Keycloak.GrantedRequest
   const context = {
     request: req,
     kauth: new KeycloakContext({ req })
@@ -186,7 +189,8 @@ test('if token does not have the required role, then an error is returned and th
         }
       }
     }
-  }
+  } as Keycloak.GrantedRequest
+
   const context = {
     request: req,
     kauth: new KeycloakContext({ req })
@@ -261,7 +265,8 @@ test('context.auth.hasRole() works even if request is not supplied in context', 
         }
       }
     }
-  }
+  } as Keycloak.GrantedRequest
+
   const context = {
     kauth: new KeycloakContext({ req })
   }
