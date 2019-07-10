@@ -12,7 +12,7 @@ const settings = {
 tokenRequester(baseUrl, settings)
   .then((token) => {
     const headers = {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`, clientId: settings.client_id
     }
     console.log(JSON.stringify(headers))
   }).catch((err) => {
