@@ -47,7 +47,7 @@ export const auth = (next: Function) => (root: any, args: any, context: any, inf
  * 
  * @param roles - The role or array of roles you want to authorize the user against.
  * 
- * Checks that the authenticated keycloak user has the role.
+ * Checks if the authenticated keycloak user has the role.
  * If the user has the role, the next resolver is called.
  * If the user does not have the role, an error is thrown.
  * 
