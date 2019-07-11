@@ -64,6 +64,48 @@ test('happy path: context.kauth.isAuthenticated() is called, then original resol
   t.truthy(resolverSpy.called)
 })
 
+test('context.kauth.isAuthenticated() is called, even if field has no resolver', async (t) => {
+  const directive = createHasRoleDirective()
+
+  const field = {
+    name: 'testField'
+  }
+
+  directive.visitFieldDefinition(field)
+
+  const root = {}
+  const args = {}
+  const req = {
+    kauth: {
+      grant: {
+        access_token: {
+          isExpired: () => {
+            return false
+          }
+        }
+      }
+    }
+  } as Keycloak.GrantedRequest
+
+  const context = {
+    request: req,
+    kauth: new KeycloakContext({ req })
+  }
+
+  const isAuthenticatedSpy = sinon.spy(context.kauth, 'isAuthenticated')
+
+  const info = {
+    parentType: {
+      name: 'testParent'
+    }
+  }
+
+  //@ts-ignore
+  await field.resolve(root, args, context, info)
+  
+  t.truthy(isAuthenticatedSpy.called)
+})
+
 test('resolver will throw if context.kauth is not present', async (t) => {
   const directive = createHasRoleDirective()
 

@@ -67,6 +67,54 @@ test('context.auth.hasRole() is called', async (t) => {
   await field.resolve(root, args, context, info)
 })
 
+test('hasRole works on fields that have no resolvers. context.auth.hasRole() is called', async (t) => {
+  t.plan(2)
+  const directiveArgs = {
+    role: 'admin'
+  }
+
+  const directive = createHasRoleDirective(directiveArgs)
+
+  const field = {
+    name: 'testField'
+  }
+
+  directive.visitFieldDefinition(field)
+
+  const root = {}
+  const args = {}
+  const req = {
+    kauth: {
+      grant: {
+        access_token: {
+          hasRole: (role: string) => {
+            t.pass()
+            t.deepEqual(role, directiveArgs.role)
+            return true
+          },
+          isExpired: () => {
+            return false
+          }
+        }
+      }
+    }
+  } as Keycloak.GrantedRequest
+
+  const context = {
+    request: req,
+    kauth: new KeycloakContext({ req })
+  }
+
+  const info = {
+    parentType: {
+      name: 'testParent'
+    }
+  }
+
+  //@ts-ignore
+  await field.resolve(root, args, context, info)
+})
+
 test('visitFieldDefinition accepts an array of roles', async (t) => {
   t.plan(4)
   const directiveArgs = {
