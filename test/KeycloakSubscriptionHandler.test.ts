@@ -4,6 +4,13 @@ import Keycloak from '../src/KeycloakTypings'
 import { KeycloakSubscriptionHandler } from '../src/KeycloakSubscriptionHandler'
 import { Token } from '../src/KeycloakToken';
 
+test('onSubscriptionConnect throws if no keycloak provided', async t => {
+  t.throws(() => {
+    //@ts-ignore
+    new KeycloakSubscriptionHandler()
+  }, 'missing keycloak instance in options')
+})
+
 test('onSubscriptionConnect throws if no connectionParams Provided', async t => {
   const stubKeycloak = {
     grantManager: {
@@ -80,6 +87,26 @@ test('onSubscriptionConnect returns a token Object if the keycloak library consi
   t.truthy(token instanceof Token)
 })
 
+test('onSubscriptionConnect can also parse the token with lowercase \'bearer\'', async t => {
+  const stubKeycloak = {
+    grantManager: {
+      validateToken: (token: string, type: 'string') => {
+        return new Promise((resolve, reject) => {
+          resolve(true)
+        })
+      }
+    }
+  } as unknown as Keycloak.Keycloak
+
+  const tokenString = 'bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJfa29BTUtBcW1xQjcxazNGeDdBQ0xvNXZqMXNoWVZwSkdJM2FScFl4allZIn0.eyJqdGkiOiJjN2UyMzA0NS00NGVmLTQ1ZDItOGY0Yy1jODA4OTlhYzljYzIiLCJleHAiOjE1NTc5NjcxMjQsIm5iZiI6MCwiaWF0IjoxNTU3OTMxMTI0LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvYXV0aC9yZWFsbXMvdm95YWdlci10ZXN0aW5nIiwiYXVkIjoidm95YWdlci10ZXN0aW5nIiwic3ViIjoiM2Y4MDRiNWEtM2U3Ni00YzI2LTk4ZTYtNDU1ZDNlMzUzZmY3IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidm95YWdlci10ZXN0aW5nIiwiYXV0aF90aW1lIjoxNTU3OTMxMTI0LCJzZXNzaW9uX3N0YXRlIjoiOThiNTM2ODAtODU5MC00MzFmLWFiNzctMDY0MDFmODgzYTY5IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInByZWZlcnJlZF91c2VybmFtZSI6ImRldmVsb3BlciJ9.iF3WdY6hwlZIX2bq40fs0GhxG991TqtBEuKbX7A8DMfgOj2QFDyNHGLVzEiJqMal44pmhlWhtOSoVp77ZZ57HdatEYqYaTnc8C8ajA8A1yxOX81D0lFu2jmC3WpKS2H0prrjdPPZyf82YpbYuwYAyiKJMpJSiRC2fGk1Owsg9O6CSj8cFbKfrS4msE1Y90S84qwrDfRYFSFFdsmeTvC71qyj4ZhNqNfPWbIwymlnYJ6xYbmTrZBv2GktXBLd0BnSu5QFoHgjiCxG3cyFV4tCIBpvWjebI6rCUehD6TTIXiW4uVOp9YPWvyZH8WznFdtq36CDb51abWJ8EUquog7M1w'
+
+  const subscriptionHandler = new KeycloakSubscriptionHandler({ keycloak: stubKeycloak })
+  const connectionParams = { Authorization: tokenString }
+
+  const token = await subscriptionHandler.onSubscriptionConnect(connectionParams, {}, {})
+  t.truthy(token instanceof Token)
+})
+
 test('the token object will have hasRole, hasRealmRole and hasPermissions if the', async t => {
   const stubKeycloak = {
     grantManager: {
@@ -125,4 +152,60 @@ test('If the keycloak token validation fails, then onSubscriptionConnect will th
   await t.throwsAsync(async () => {
     await subscriptionHandler.onSubscriptionConnect(connectionParams, {}, {})
   }, `Access Denied - ${new Error(errorMsg)}`)  
+})
+
+test('onSubscriptionConnect with {protect: false} does not throw if no connectionParams Provided', async t => {
+  const stubKeycloak = {
+    grantManager: {
+      validateToken: (token: string, type: 'string') => {
+        return new Promise((resolve, reject) => {
+          resolve(true)
+        })
+      }
+    }
+  } as unknown as Keycloak.Keycloak
+
+  const subscriptionHandler = new KeycloakSubscriptionHandler({ keycloak: stubKeycloak, protect: false })
+
+  await t.notThrowsAsync(async () => {
+    await subscriptionHandler.onSubscriptionConnect(null, {}, {})
+  })
+})
+
+test('onSubscriptionConnect with {protect: false} does not throw if connectionParams is not an object', async t => {
+  const stubKeycloak = {
+    grantManager: {
+      validateToken: (token: string, type: 'string') => {
+        return new Promise((resolve, reject) => {
+          resolve(true)
+        })
+      }
+    }
+  } as unknown as Keycloak.Keycloak
+
+  const subscriptionHandler = new KeycloakSubscriptionHandler({ keycloak: stubKeycloak, protect: false })
+  const connectionParams = 'not an object'
+
+  await t.notThrowsAsync(async () => {
+    await subscriptionHandler.onSubscriptionConnect(connectionParams, {}, {})
+  })
+})
+
+test('onSubscriptionConnect with {protect: false} does not throw if no Auth provided', async t => {
+  const stubKeycloak = {
+    grantManager: {
+      validateToken: (token: string, type: 'string') => {
+        return new Promise((resolve, reject) => {
+          resolve(true)
+        })
+      }
+    }
+  } as unknown as Keycloak.Keycloak
+
+  const subscriptionHandler = new KeycloakSubscriptionHandler({ keycloak: stubKeycloak, protect: false })
+  const connectionParams = { Authorization: undefined }
+
+  await t.notThrowsAsync(async () => {
+    await subscriptionHandler.onSubscriptionConnect(connectionParams, {}, {})
+  })
 })

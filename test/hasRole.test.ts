@@ -91,7 +91,6 @@ test('visitFieldDefinition accepts an array of roles', async (t) => {
       grant: {
         access_token: {
           hasRole: (role: string) => {
-            t.log(`checking has role ${role}`)
             t.pass()
             return (role === 'baz') // this makes sure it doesn't return true instantly
           },
