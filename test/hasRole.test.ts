@@ -307,7 +307,7 @@ test('hasRole role arg can be an array, non string values will be converted, vis
     name: 'testField'
   }
 
-  const validateSpy = sinon.spy(directive, 'validateArgs')
+  const validateSpy = sinon.spy(directive, 'parseAndValidateArgs')
   
   directive.visitFieldDefinition(field)
 
