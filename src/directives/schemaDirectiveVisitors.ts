@@ -36,13 +36,16 @@ export class HasRoleDirective extends SchemaDirectiveVisitor {
 
   public visitFieldDefinition (field: any) {
     const { resolve = defaultFieldResolver } = field
-    const roles = this.validateArgs(this.args)
+    const roles = this.parseAndValidateArgs(this.args)
     field.resolve = hasRole(roles)(resolve)
   }
 
-  // validate a potential string or array of values
-  // if an array is provided, cast all values to strings
-  public validateArgs (args: {[name: string]: any}): Array<string> {
+  /**
+   * 
+   * validate a potential string or array of values
+   * if an array is provided, cast all values to strings
+   */
+  public parseAndValidateArgs (args: {[name: string]: any}): Array<string> {
     const keys = Object.keys(args)
 
     if (keys.length === 1 && keys[0] === 'role') {
