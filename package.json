@@ -23,7 +23,7 @@
     "lint": "tslint '*/*/src/**/*.ts' --exclude 'src/**/*.test.ts' && tslint -c tslint_tests.json 'src/**/*.test.ts'"
   },
   "dependencies": {
-    "apollo-server-express": "2.6.7",
+    "apollo-server-express": "2.6.9",
     "graphql-tools": "4.0.5",
     "keycloak-connect": "6.0.1"
   },
