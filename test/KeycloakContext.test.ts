@@ -1,9 +1,38 @@
 import test from 'ava'
 import Keycloak from 'keycloak-connect'
 
-import { KeycloakContext } from '../src/KeycloakContext'
+import { KeycloakContext, KeycloakContextBase, KeycloakSubscriptionContext } from '../src/KeycloakContext'
 
-test('AuthContextProvider accessToken is the access_token in req.kauth', (t) => {
+test('KeycloakContextBase accessToken is the access_token in req.kauth', (t) => {
+  const token = {
+    hasRole: (role: string) => {
+      return true
+    },
+    isExpired: () => {
+      return false
+    }
+  } as Keycloak.Token
+
+  const provider = new KeycloakContextBase(token)
+  t.deepEqual(provider.accessToken, token)
+})
+
+test('KeycloakSubscriptionContext accessToken is the access_token in req.kauth', (t) => {
+
+  const token = {
+    hasRole: (role: string) => {
+      return true
+    },
+    isExpired: () => {
+      return false
+    }
+  } as Keycloak.Token
+
+  const provider = new KeycloakSubscriptionContext(token)
+  t.deepEqual(provider.accessToken, token)
+})
+
+test('KeycloakContext accessToken is the access_token in req.kauth', (t) => {
 
   const req = {
     kauth: {
@@ -25,7 +54,7 @@ test('AuthContextProvider accessToken is the access_token in req.kauth', (t) => 
   t.deepEqual(provider.accessToken, token)
 })
 
-test('AuthContextProvider hasRole calls hasRole in the access_token', (t) => {
+test('KeycloakContext hasRole calls hasRole in the access_token', (t) => {
   t.plan(2)
   const req = {
     kauth: {
@@ -47,7 +76,7 @@ test('AuthContextProvider hasRole calls hasRole in the access_token', (t) => {
   t.truthy(provider.hasRole(''))
 })
 
-test('AuthContextProvider.isAuthenticated is true when token is defined and isExpired returns false', (t) => {
+test('KeycloakContext.isAuthenticated is true when token is defined and isExpired returns false', (t) => {
   const req = {
     kauth: {
       grant: {
@@ -67,7 +96,7 @@ test('AuthContextProvider.isAuthenticated is true when token is defined and isEx
   t.truthy(provider.isAuthenticated())
 })
 
-test('AuthContextProvider.isAuthenticated is false when token is defined but isExpired returns true', (t) => {
+test('KeycloakContext.isAuthenticated is false when token is defined but isExpired returns true', (t) => {
   const req = {
     kauth: {
       grant: {
@@ -87,7 +116,7 @@ test('AuthContextProvider.isAuthenticated is false when token is defined but isE
   t.false(provider.isAuthenticated())
 })
 
-test('AuthContextProvider.hasRole is false if token is expired', (t) => {
+test('KeycloakContext.hasRole is false if token is expired', (t) => {
   const req = {
     kauth: {
       grant: {

@@ -42,7 +42,7 @@ export class KeycloakSubscriptionHandler {
    * @param options 
    */
   constructor (options: KeycloakSubscriptionHandlerOptions) {
-    if (!options.keycloak) {
+    if (!options || !options.keycloak) {
       throw new Error('missing keycloak instance in options')
     }
     this.keycloak = options.keycloak
