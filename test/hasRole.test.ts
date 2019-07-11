@@ -1,10 +1,10 @@
 import test from 'ava'
+import sinon from 'sinon'
 
 import Keycloak from 'keycloak-connect'
 import { GraphQLSchema } from 'graphql'
 import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
 import { HasRoleDirective } from '../src/directives/schemaDirectiveVisitors'
-
 import { KeycloakContext } from '../src/KeycloakContext'
 
 const createHasRoleDirective = (directiveArgs: any) => {
@@ -208,7 +208,7 @@ test('if token does not have the required role, then an error is returned and th
   }, `User is not authorized. Must have one of the following roles: [${directiveArgs.role}]`)
 })
 
-test('if hasRole arguments are invalid, visitSchemaDirective does not throw, but field.resolve will return a generic error to the user and original resolver will not be called', async (t) => {
+test('hasRole does not allow unkown arguments, visitFieldDefinition will throw', async (t) => {
   const directiveArgs = {
     role: 'admin',
     some: 'unknown arg'
@@ -219,8 +219,7 @@ test('if hasRole arguments are invalid, visitSchemaDirective does not throw, but
   const field = {
     resolve: (root: any, args: any, context: any, info: any) => {
       return new Promise((resolve, reject) => {
-        t.fail('the original resolver should never be called when an auth error is thrown')
-        return reject(new Error('the original resolver should never be called when an auth error is thrown'))
+        t.fail('the original resolver should never be called')
       })
     },
     name: 'testField'
@@ -229,6 +228,90 @@ test('if hasRole arguments are invalid, visitSchemaDirective does not throw, but
   t.throws(() => {
     directive.visitFieldDefinition(field)
   })
+})
+
+test('hasRole does not allow a non string value for role, visitFieldDefinition will throw', async (t) => {
+  const directiveArgs = {
+    role: 123
+  }
+
+  const directive = createHasRoleDirective(directiveArgs)
+
+  const field = {
+    resolve: (root: any, args: any, context: any, info: any) => {
+      return new Promise((resolve, reject) => {
+        t.fail('the original resolver should never be called')
+      })
+    },
+    name: 'testField'
+  }
+
+  t.throws(() => {
+    directive.visitFieldDefinition(field)
+  })
+})
+
+test('hasRole must contain role arg, visitFieldDefinition will throw', async (t) => {
+  const directiveArgs = {}
+
+  const directive = createHasRoleDirective(directiveArgs)
+
+  const field = {
+    resolve: (root: any, args: any, context: any, info: any) => {
+      return new Promise((resolve, reject) => {
+        t.fail('the original resolver should never be called')
+      })
+    },
+    name: 'testField'
+  }
+
+  t.throws(() => {
+    directive.visitFieldDefinition(field)
+  })
+})
+
+test('hasRole role arg can be an array, visitFieldDefinition will not throw', async (t) => {
+  const directiveArgs = {
+    role: ['admin', 'developer']
+  }
+
+  const directive = createHasRoleDirective(directiveArgs)
+
+  const field = {
+    resolve: (root: any, args: any, context: any, info: any) => {
+      return new Promise((resolve, reject) => {
+        t.fail('the original resolver should never be called')
+      })
+    },
+    name: 'testField'
+  }
+
+  t.notThrows(() => {
+    directive.visitFieldDefinition(field)
+  })
+})
+
+test('hasRole role arg can be an array, non string values will be converted, visitFieldDefinition will not throw', async (t) => {
+  t.plan(1)
+  const directiveArgs = {
+    role: ['admin', 1, 1.234]
+  }
+
+  const expectedValue = ['admin', '1', '1.234']
+
+  
+  const directive = createHasRoleDirective(directiveArgs)
+
+  const field = {
+    resolve: (root: any, args: any, context: any, info: any) => {},
+    name: 'testField'
+  }
+
+  const validateSpy = sinon.spy(directive, 'validateArgs')
+  
+  directive.visitFieldDefinition(field)
+
+  t.deepEqual(expectedValue, validateSpy.returnValues[0])
 })
 
 test('context.auth.hasRole() works even if request is not supplied in context', async (t) => {

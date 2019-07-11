@@ -1,6 +1,5 @@
 import { defaultFieldResolver, GraphQLSchema } from 'graphql'
 import { SchemaDirectiveVisitor } from 'graphql-tools'
-import Joi from 'joi'
 import { auth, hasRole } from './directiveResolvers'
 import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
 
@@ -37,27 +36,25 @@ export class HasRoleDirective extends SchemaDirectiveVisitor {
 
   public visitFieldDefinition (field: any) {
     const { resolve = defaultFieldResolver } = field
-    const { error, value } = this.validateArgs()
-    if (error) {
-      throw error
-    }
-
-    const { roles } = value
-
+    const roles = this.validateArgs(this.args)
     field.resolve = hasRole(roles)(resolve)
   }
 
-  public validateArgs () {
-    // joi is dope. Read the docs and discover the magic.
-    // https://github.com/hapijs/joi/blob/master/API.md
-    const argsSchema = Joi.object({
-      role: Joi.array().required().items(Joi.string()).single()
-    })
+  // validate a potential string or array of values
+  // if an array is provided, cast all values to strings
+  public validateArgs (args: {[name: string]: any}): Array<string> {
+    const keys = Object.keys(args)
 
-    const result = argsSchema.validate(this.args)
-
-    // result.value.role will be an array so it makes sense to add the roles alias
-    result.value.roles = result.value.role
-    return result
+    if (keys.length === 1 && keys[0] === 'role') {
+      const role = args[keys[0]]
+      if (typeof role == 'string') {
+        return [role]
+      } else if (Array.isArray(role)) {
+        return role.map(val => String(val))
+      } else {
+        throw new Error(`invalid hasRole args. role must be a String or an Array of Strings`)
+      }
+    }
+    throw Error('invalid hasRole args. must contain only a \'role\ argument')
   }
 }
