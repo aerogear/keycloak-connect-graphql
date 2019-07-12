@@ -2,7 +2,7 @@
 
 [![CircleCI](https://img.shields.io/circleci/build/github/aerogear/keycloak-connect-graphql.svg)](https://circleci.com/gh/aerogear/keycloak-connect-graphql)
 [![Coverage Status](https://coveralls.io/repos/github/aerogear/keycloak-connect-graphql/badge.svg)](https://coveralls.io/github/aerogear/keycloak-connect-graphql)
-![npm](https://img.shields.io/npm/v/keycloak-connect-node.svg)
+![npm](https://img.shields.io/npm/v/keycloak-connect-graphql.svg)
 ![GitHub](https://img.shields.io/github/license/aerogear/keycloak-connect-graphql.svg)
 
 A comprehensive solution for adding [keycloak](https://www.keycloak.org/) Authentication and Authorization to your Express based GraphQL server. 
