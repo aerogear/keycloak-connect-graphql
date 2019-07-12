@@ -167,7 +167,7 @@ It also is possible to check for realm roles and application roles.
 
 ## Authentication and Authorization on Subscriptions
 
-The `KeycloakSubscriptionHandler` provides a way to validate incoming websocket connections to [`SubscriptionServer`]() from [`subscriptions-transport-ws`](https://www.npmjs.com/package/subscriptions-transport-ws) for subscriptions and add the keycloak user token to the `context` in subscription resolvers.
+The `KeycloakSubscriptionHandler` provides a way to validate incoming websocket connections to `SubscriptionServer` from [`subscriptions-transport-ws`](https://www.npmjs.com/package/subscriptions-transport-ws) for subscriptions and add the keycloak user token to the `context` in subscription resolvers.
 
 Using `onSubscriptionConnect` inside the `onConnect` function, we can parse and validate the keycloak user token from the `connectionParams`. The example below shows the typical setup that will **ensure all subscriptions must be authenticated**.
 
