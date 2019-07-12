@@ -1,6 +1,6 @@
 const express = require('express')
 const { ApolloServer, gql } = require('apollo-server-express')
-const { configureKeycloak } = require('./common')
+const { configureKeycloak } = require('./lib/common')
 
 const {
   KeycloakContext,

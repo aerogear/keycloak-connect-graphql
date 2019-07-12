@@ -1,6 +1,9 @@
 # keycloak-connect-graphql
 
-[![CircleCI](https://circleci.com/gh/aerogear/keycloak-connect-graphql.svg?style=svg)](https://circleci.com/gh/aerogear/keycloak-connect-graphql)
+[![CircleCI](https://img.shields.io/circleci/build/github/aerogear/keycloak-connect-graphql.svg)](https://circleci.com/gh/aerogear/keycloak-connect-graphql)
+[![Coverage Status](https://coveralls.io/repos/github/aerogear/keycloak-connect-graphql/badge.svg)](https://coveralls.io/github/aerogear/keycloak-connect-graphql)
+![npm](https://img.shields.io/npm/v/keycloak-connect-node.svg)
+![GitHub](https://img.shields.io/github/license/aerogear/keycloak-connect-graphql.svg)
 
 A comprehensive solution for adding [keycloak](https://www.keycloak.org/) Authentication and Authorization to your Express based GraphQL server. 
 
@@ -122,7 +125,7 @@ In this example a number of things are happening:
 2. `@hasRole(role: "editor")` is applied to the `publishArticle` Mutation. This means the keycloak user must have the editor *client role* in keycloak
 3. The `publishArticle` resolver demonstrates how `context.kauth` can be used to get the keycloak user details
 
-### Using the `auth` and `hasRole` resolvers directly.
+### `auth` and `hasRole` middlewares.
 
 `keycloak-connect-graphql` also exports the `auth` and `hasRole` logic directly. They can be thought of as middlewares that wrap your business logic resolvers. This is useful if you don't have a clear way to use schema directives (e.g. when using `graphql-express`).
 
@@ -166,7 +169,7 @@ It also is possible to check for realm roles and application roles.
 
 The `KeycloakSubscriptionHandler` provides a way to validate incoming websocket connections to [`SubscriptionServer`]() from [`subscriptions-transport-ws`](https://www.npmjs.com/package/subscriptions-transport-ws) for subscriptions and add the keycloak user token to the `context` in subscription resolvers.
 
-Using , we can a small amount of code to the `onConnect` function to parse and validate the keycloak user token from the `connectionParams`.
+Using `onSubscriptionConnect` inside the `onConnect` function, we can parse and validate the keycloak user token from the `connectionParams`. The example below shows the typical setup that will **ensure all subscriptions must be authenticated**.
 
 ```js
 const { KeycloakSubscriptionHandler } = require('keycloak-connect-graphql')
@@ -196,25 +199,105 @@ const httpServer = app.listen({ port }, () => {
 
 In this example, `keycloakSubscriptionHandler.onSubscriptionConnect` parses the connectionParams into a Keycloak Access Token. The value returned from `onConnect` becomes the `context` in subscription resolvers. By returning `{ kauth: new KeycloakSubscriptionContext }` we will have access to the keycloak user token in our subscription resolvers.
 
-By default, `onSubscriptionConnect` throws an Authentication `Error` and the subscription is cancelled if invalid `connectionParams` or an expired/invalid keycloak token is supplied. This is an easy way to require authentication on all subscriptions.
+By default, `onSubscriptionConnect` throws an Authentication `Error` and the subscription is cancelled if invalid `connectionParams` or an expired/invalid keycloak token is supplied. This is an easy way to force authentication on all subscriptions.
+
+For more information, please read the generic apollo documentation on [Authentication Over Websockets.](https://www.apollographql.com/docs/apollo-server/features/subscriptions/#authentication-over-websocket)
 
 ### Advanced Authentication and Authorization on Subscriptions
 
-TODO
+The `auth` and `hasRole` middlewares can be used on individual subscriptions. Use the same code to from the [Authentication and Authorization on Subscriptions](#authentication-and-authorization-on-subscriptions) example but intialise the `KeycloakSubscriptionHandler` with `protect:false`.
 
-### What Connection Params Should the Client Send?
+```js
+const keycloakSubscriptionHandler = new KeycloakSubscriptionHandler({ keycloak, protect: false })
+```
+
+When `protect` is false, an error will not be thrown during the initial websocket connection attempt if the client is not authenticated. Instead, the `auth` and `hasRole` middlewares can be used on the individual subscription resolvers.
+
+```js
+const { auth, hasRole } = require('keycloak-connect-graphql')
+
+const typeDefs = gql`
+  type Message {
+    content: String!
+    author: String
+  }
+
+  type Comment {
+    content: String!
+    author: String
+  }
+
+  type Subscription {
+    commentAdded: Comment!
+    messageAdded: Message! @auth
+    alertAdded: String @hasRole(role: "admin") 
+  }
+`
+
+const resolvers = {
+  Subscription: {
+    commentAdded: {
+      subscribe: () => pubsub.asyncIterator(COMMENT_ADDED)
+    },
+    messageAdded: {
+      subscribe: auth(() => pubsub.asyncIterator(COMMENT_ADDED))
+    },
+    alertAdded: hasRole('admin')(() => pubsub.asyncIterator(ALERT_ADDED))
+  }
+}
+```
+
+In this hypothetical application we have three subscription type that have varying levels of Authentication/Authorization
+
+* commentAdded - Unauthenticated users can subscribe.
+* messageAdded - Only authenticated users can subscribe.
+* alertAdded - Only authenticated user with the `admin` client role can subscribe.
+
+### Client Authentication over Websocket
 
 The GraphQL client should provide the following `connectionParams` when attempting a websocket connection.
 
-```
+```json
 {
   "Authorization": "Bearer <keycloak token value>",
   "clientId": "<name of the clientId assigned to the application in Keycloak>"
 }
 ```
 
-See the Apollo Client documentation.
+The example code shows how it could be done on the client side using Apollo Client.
+
+```js
+import Keycloak from "keycloak-js"
+import { WebSocketLink } from 'apollo-link-ws'
+
+
+var keycloak = Keycloak({
+    url: 'http://keycloak-server/auth',
+    realm: 'myrealm',
+    clientId: 'myapp'
+})
+
+const wsLink = new WebSocketLink({
+  uri: `ws://localhost:5000/`,
+  options: {
+    reconnect: true,
+    connectionParams: {
+        Authorization: keycloak.token,
+        clientId: 'myapp'
+    }
+})
+```
+
+See the Apollo Client documentation for [Authentication Params Over Websocket](https://www.apollographql.com/docs/react/advanced/subscriptions/#authentication-over-websocket).
+
+See the Keycloak Documentation for the [Keycloak JavaScript Adapter](https://www.keycloak.org/docs/latest/securing_apps/index.html#_javascript_adapter)
 
 ## Examples
 
-TODO
+The `examples` folder contains runnable examples that demonstrate the various ways to use this library.
+
+* `examples/basic.js` - Shows the basic setup needed to use the library. Uses `keycloak.connect()` to require authentication on the entire GraphQL API.
+* `examples/advancedAuth` - Shows how to use the `@auth` and `@hasRole` schema directives to apply auth at the GraphQL layer.
+* `examples/authMiddlewares` - Shows usage of the `auth` and `hasRole` middlewares.
+* `subscriptions` - Shows basic subscriptions setup, requiring all subscriptions to be authenticated.
+* `subscriptionsAdvanced` - Shows subscriptions that use the `auth` and `hasRole` middlewares directly on subscription resolvers.
