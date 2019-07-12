@@ -1,3 +1,5 @@
+import { CONTEXT_KEY } from '../KeycloakContext'
+
 /**
  * 
  * @param next - The resolver function you want to wrap with the auth resolver
@@ -37,7 +39,7 @@
  * 
  */
 export const auth = (next: Function) => (root: any, args: any, context: any, info: any) => {
-  if (!context.kauth || !context.kauth.isAuthenticated()) {
+  if (!context[CONTEXT_KEY] || !context[CONTEXT_KEY].isAuthenticated()) {
     throw new Error(`User not Authenticated`)
   }
   return next(root, args, context, info)
@@ -91,7 +93,7 @@ export const auth = (next: Function) => (root: any, args: any, context: any, inf
  * ```
  */
 export const hasRole = (roles: Array<string>) => (next: Function) => (root: any, args: any, context: any, info: any) => {
-  if (!context.kauth || !context.kauth.isAuthenticated()) {
+  if (!context[CONTEXT_KEY] || !context[CONTEXT_KEY].isAuthenticated()) {
     throw new Error(`User not Authenticated`)
   }
 
@@ -102,7 +104,7 @@ export const hasRole = (roles: Array<string>) => (next: Function) => (root: any,
   let foundRole = null // this will be the role the user was successfully authorized on
 
   for (let role of roles) {
-    if (context.kauth.hasRole(role)) {
+    if (context[CONTEXT_KEY].hasRole(role)) {
       foundRole = role
       break
     }
