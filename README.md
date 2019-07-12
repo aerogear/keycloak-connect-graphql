@@ -66,7 +66,7 @@ app.listen({ 4000 }, () =>
 ) 
 ```
 
-In this example `keycloak.middleware()` is used on the GraphQL endpoint. This allows for **Authentication and Authorization at the GraphQL Layer**. `keycloak.middleware` parses user token information if found, but will not block unauthenticated requests. This approach means gives us the flexibility to implement authentication on individual Queries, Mutations and Fields.
+In this example `keycloak.middleware()` is used on the GraphQL endpoint. This allows for **Authentication and Authorization at the GraphQL Layer**. `keycloak.middleware` parses user token information if found, but will not block unauthenticated requests. This approach gives us the flexibility to implement authentication on individual Queries, Mutations and Fields.
 
 ## Using @auth and @hasRole directives (Apollo Server only)
 
