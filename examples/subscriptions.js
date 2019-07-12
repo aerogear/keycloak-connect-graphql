@@ -5,7 +5,7 @@ const { SubscriptionServer } = require('subscriptions-transport-ws')
 
 const { ApolloServer, gql } = require('apollo-server-express')
 
-const { configureKeycloak } = require('./common')
+const { configureKeycloak } = require('./lib/common')
 
 const { 
   KeycloakContext,
@@ -58,6 +58,9 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs: [KeycloakTypeDefs, typeDefs],
   schemaDirectives: KeycloakSchemaDirectives,
+  subscriptions: {
+    onConnect:
+  }
   resolvers,
   context: ({ req }) => {
     return {
