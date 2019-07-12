@@ -20,7 +20,10 @@
     "compile:clean": "tsc --build tsconfig.json --clean",
     "test": "nyc ava -v",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "lint": "tslint '*/*/src/**/*.ts' --exclude 'src/**/*.test.ts' && tslint -c tslint_tests.json 'src/**/*.test.ts'"
+    "lint": "tslint '*/*/src/**/*.ts' --exclude 'src/**/*.test.ts' && tslint -c tslint_tests.json 'src/**/*.test.ts'",
+    "release:prep": "./scripts/prepareRelease.sh",
+    "release:validate": "./scripts/validateRelease.sh",
+    "publish": "./scripts/publishRelease.sh"
   },
   "dependencies": {
     "apollo-server-express": "2.6.7",
