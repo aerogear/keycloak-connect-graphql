@@ -1,8 +1,11 @@
 import { AuthContextProvider } from './api'
 import Keycloak from 'keycloak-connect'
 
+export const CONTEXT_KEY = 'kauth'
+
 export class KeycloakContextBase implements AuthContextProvider {
   public readonly accessToken: Keycloak.Token | undefined
+  public static contextKey = CONTEXT_KEY
 
   constructor (token?: Keycloak.Token) {
     this.accessToken = token
