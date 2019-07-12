@@ -1,6 +1,6 @@
 {
   "name": "keycloak-connect-graphql",
-  "version": "0.5.1",
+  "version": "0.1.0",
   "description": "Add Keycloak authentication and authorization to your GraphQL server.",
   "author": "AeroGear Team<aerogear@googlegroups.com>",
   "homepage": "http://aerogear.org",
