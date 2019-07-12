@@ -1,6 +1,6 @@
 {
   "name": "keycloak-connect-graphql",
-  "version": "0.1.1",
+  "version": "0.1.1-rc2",
   "description": "Add Keycloak authentication and authorization to your GraphQL server.",
   "keywords": [
     "graphql",
@@ -30,7 +30,7 @@
     "lint": "tslint '*/*/src/**/*.ts' --exclude 'src/**/*.test.ts' && tslint -c tslint_tests.json 'src/**/*.test.ts'",
     "release:prep": "./scripts/prepareRelease.sh",
     "release:validate": "./scripts/validateRelease.sh",
-    "publish": "./scripts/publishRelease.sh"
+    "release:publish": "./scripts/publishRelease.sh"
   },
   "dependencies": {
     "apollo-server-express": "2.6.9",
