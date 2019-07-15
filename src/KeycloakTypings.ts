@@ -190,6 +190,8 @@ declare namespace KeycloakConnect {
 
 
   interface Keycloak {
+    config: {[key: string]: any}
+
     grantManager: GrantManager
 
     /**
