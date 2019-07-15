@@ -73,7 +73,7 @@ export class KeycloakSubscriptionHandler {
       }
       return
     }
-    const token = this.getBearerTokenFromHeader(header, clientId)
+    const token = this.getBearerTokenFromHeader(header, this.keycloak.config.clientId)
     try {
       await this.keycloak.grantManager.validateToken(token, 'Bearer')
       //@ts-ignore
