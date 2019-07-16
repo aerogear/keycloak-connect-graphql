@@ -5,7 +5,7 @@ const Keycloak = require('keycloak-connect')
 
 function configureKeycloak(app, graphqlPath) {
 
-  const keycloakConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, './config/keycloak.json')))
+  const keycloakConfig = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config/keycloak.json')))
 
   const memoryStore = new session.MemoryStore()
 
