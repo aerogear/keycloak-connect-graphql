@@ -66,7 +66,6 @@ export class KeycloakSubscriptionHandler {
                   || connectionParams.authorization
                   || connectionParams.Auth
                   || connectionParams.auth
-    const clientId = connectionParams.clientId
     if (!header) {
       if (this.protect === true) {
         throw new Error('Access Denied - missing Authorization field in connection parameters')
