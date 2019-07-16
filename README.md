@@ -259,15 +259,14 @@ The GraphQL client should provide the following `connectionParams` when attempti
 
 ```json
 {
-  "Authorization": "Bearer <keycloak token value>",
-  "clientId": "<name of the clientId assigned to the application in Keycloak>"
+  "Authorization": "Bearer <keycloak token value>"
 }
 ```
 
 The example code shows how it could be done on the client side using Apollo Client.
 
 ```js
-import Keycloak from "keycloak-js"
+import Keycloak from 'keycloak-js'
 import { WebSocketLink } from 'apollo-link-ws'
 
 
@@ -278,12 +277,11 @@ var keycloak = Keycloak({
 })
 
 const wsLink = new WebSocketLink({
-  uri: `ws://localhost:5000/`,
+  uri: 'ws://localhost:5000/',
   options: {
     reconnect: true,
     connectionParams: {
-        Authorization: keycloak.token,
-        clientId: 'myapp'
+        Authorization: `Bearer ${keycloak.token}`
     }
 })
 ```
