@@ -39,9 +39,9 @@
   },
   "devDependencies": {
     "@types/express-session": "1.15.13",
-    "@types/graphql": "14.2.2",
+    "@types/graphql": "14.2.3",
     "@types/keycloak-connect": "4.5.1",
-    "@types/node": "10.14.12",
+    "@types/node": "10.14.13",
     "@types/sinon": "7.0.13",
     "ava": "2.2.0",
     "coveralls": "3.0.5",
