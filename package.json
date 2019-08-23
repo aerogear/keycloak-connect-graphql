@@ -33,7 +33,7 @@
     "release:publish": "./scripts/publishRelease.sh"
   },
   "dependencies": {
-    "apollo-server-express": "2.8.2",
+    "apollo-server-express": "2.9.0",
     "graphql-tools": "4.0.5",
     "keycloak-connect": "6.0.1"
   },
