@@ -30,7 +30,8 @@
     "lint": "tslint '*/*/src/**/*.ts' --exclude 'src/**/*.test.ts' && tslint -c tslint_tests.json 'src/**/*.test.ts'",
     "release:prep": "./scripts/prepareRelease.sh",
     "release:validate": "./scripts/validateRelease.sh",
-    "release:publish": "./scripts/publishRelease.sh"
+    "release:publish": "./scripts/publishRelease.sh",
+    "examples:seed": "node scripts/initKeycloak.js"
   },
   "dependencies": {
     "apollo-server-express": "2.9.8",
@@ -50,6 +51,7 @@
     "graphql": "14.5.8",
     "graphql-subscriptions": "1.1.0",
     "keycloak-request-token": "0.1.0",
+    "keycloak-admin": "^1.12.0",
     "nyc": "14.1.1",
     "sinon": "7.5.0",
     "subscriptions-transport-ws": "0.9.16",

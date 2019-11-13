@@ -1,7 +1,7 @@
 const express = require('express')
+const http = require('http')
 const { PubSub } = require('graphql-subscriptions')
-const { execute, subscribe } = require('graphql')
-const { SubscriptionServer } = require('subscriptions-transport-ws')
+
 
 const { ApolloServer, gql } = require('apollo-server-express')
 
@@ -55,12 +55,19 @@ const resolvers = {
   }
 }
 
+const keycloakSubscriptionHandler = new KeycloakSubscriptionHandler({ keycloak })
+
 const server = new ApolloServer({
   typeDefs: [KeycloakTypeDefs, typeDefs],
   schemaDirectives: KeycloakSchemaDirectives,
   subscriptions: {
-    onConnect:
-  }
+    onConnect: async (connectionParams, websocket, connectionContext) => {
+      const token = await keycloakSubscriptionHandler.onSubscriptionConnect(connectionParams)
+      return {
+        kauth: new KeycloakSubscriptionContext(token)
+      }
+    }
+  },
   resolvers,
   context: ({ req }) => {
     return {
@@ -69,28 +76,12 @@ const server = new ApolloServer({
   }
 })
 
-server.applyMiddleware({ app })
-
 const port = 4000
 
-const httpServer = app.listen({ port }, () => {
+server.applyMiddleware({ app })
+const httpServer = http.createServer(app)
+server.installSubscriptionHandlers(httpServer)
+
+httpServer.listen(port, () => {
   console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`)
-
-  // Initialize the keycloak subscription handler passing in our keycloak instance
-  const keycloakSubscriptionHandler = new KeycloakSubscriptionHandler({ keycloak })
-  new SubscriptionServer({
-    execute,
-    subscribe,
-    schema: server.schema,
-    onConnect: async (connectionParams, websocket, connectionContext) => {
-      const token = await keycloakSubscriptionHandler.onSubscriptionConnect(connectionParams)
-      return {
-        kauth: new KeycloakSubscriptionContext(token)
-      }
-    }
-  }, {
-    server: httpServer,
-    path: graphqlPath
-  })
 })
-
