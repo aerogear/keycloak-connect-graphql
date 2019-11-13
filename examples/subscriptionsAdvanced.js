@@ -1,7 +1,6 @@
 const express = require('express')
+const http = require('http')
 const { PubSub } = require('graphql-subscriptions')
-const { execute, subscribe } = require('graphql')
-const { SubscriptionServer } = require('subscriptions-transport-ws')
 
 const { ApolloServer, gql } = require('apollo-server-express')
 
@@ -64,10 +63,20 @@ const resolvers = {
   }
 }
 
+const keycloakSubscriptionHandler = new KeycloakSubscriptionHandler({ keycloak, protect: false })
+
 const server = new ApolloServer({
   typeDefs: [KeycloakTypeDefs, typeDefs],
   schemaDirectives: KeycloakSchemaDirectives,
   resolvers,
+  subscriptions: {
+    onConnect: async (connectionParams, websocket, connectionContext) => {
+      const token = await keycloakSubscriptionHandler.onSubscriptionConnect(connectionParams)
+      return {
+        kauth: new KeycloakSubscriptionContext(token)
+      }
+    }
+  },
   context: ({ req }) => {
     return {
       kauth: new KeycloakContext({ req })
@@ -75,30 +84,13 @@ const server = new ApolloServer({
   }
 })
 
-server.applyMiddleware({ app })
-
 const port = 4000
 
-const httpServer = app.listen({ port }, () => {
-  console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`)
+server.applyMiddleware({ app })
+const httpServer = http.createServer(app)
+server.installSubscriptionHandlers(httpServer)
 
-  // Initialize the keycloak subscription handler passing in our keycloak instance
-  // protect: false means that subscriptions will not fail
-  // if the token is not provided by the client in connectionParams
-  const keycloakSubscriptionHandler = new KeycloakSubscriptionHandler({ keycloak, protect: false })
-  new SubscriptionServer({
-    execute,
-    subscribe,
-    schema: server.schema,
-    onConnect: async (connectionParams, websocket, connectionContext) => {
-      const token = await keycloakSubscriptionHandler.onSubscriptionConnect(connectionParams)
-      return {
-        kauth: new KeycloakSubscriptionContext(token)
-      }
-    }
-  }, {
-    server: httpServer,
-    path: graphqlPath
-  })
+httpServer.listen(port, () => {
+  console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`)
 })
 

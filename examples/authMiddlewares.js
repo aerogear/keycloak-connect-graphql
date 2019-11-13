@@ -5,7 +5,8 @@ const { configureKeycloak } = require('./lib/common')
 const {
   KeycloakContext,
   KeycloakTypeDefs,
-  KeycloakSchemaDirectives
+  auth,
+  hasRole
 } = require('../')
 
 const app = express()

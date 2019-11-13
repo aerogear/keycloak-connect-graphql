@@ -299,3 +299,150 @@ The `examples` folder contains runnable examples that demonstrate the various wa
 * `examples/authMiddlewares` - Shows usage of the `auth` and `hasRole` middlewares.
 * `subscriptions` - Shows basic subscriptions setup, requiring all subscriptions to be authenticated.
 * `subscriptionsAdvanced` - Shows subscriptions that use the `auth` and `hasRole` middlewares directly on subscription resolvers.
+
+## Setting up the Examples
+
+Prerequisites:
+
+* Docker and docker-compose installed
+* Node.js and NPM installed
+
+Start by cloning this repo.
+
+```
+git clone https://github.com/aerogear/keycloak-connect-graphql/
+```
+
+Then start a Keycloak server using `docker-compose`.
+
+```
+cd examples/config && docker-compose up
+```
+
+Now in a separate terminal, seed the keycloak server with a sample configuration.
+
+```
+$ npm run examples:seed
+
+creating role admin
+creating role developer
+creating client role admin for client keycloak-connect-graphql-bearer
+creating client role developer for client keycloak-connect-graphql-bearer
+creating client role admin for client keycloak-connect-graphql-public
+creating client role developer for client keycloak-connect-graphql-public
+creating user developer with password developer
+assigning client and realm roles called "developer" to user developer
+creating user admin with password admin
+assigning client and realm roles called "admin" to user admin
+done
+```
+
+This creates a sample realm called `keycloak-connect-graphql` with some clients, roles and users that we can use in the examples.
+Now we are ready to start and explore the examples.
+
+The Keycloak console is accessible at [localhost:8080](http://localhost:8080) and the admin login is `admin/admin`. You can make any configuration changes you wish and `npm run examples:seed` will always recreate the example realm from scratch.
+
+## Running the Basic Example
+
+The basic example shows:
+
+* The setup of the keycloak express middleware
+* How to add **Role Based Access Control** using the `@hasRole` schema directive.
+
+In `examples/basic.js` the GraphQL schema for the server is defined:
+
+```js
+const typeDefs = gql`
+  type Query {
+    hello: String @hasRole(role: "developer")
+  }
+`
+```
+
+The `@hasRole` directive means only users with the `developer` role are authorized to perform the `hello` query. Start the server to try it out.
+
+```
+$ node examples/basic.js
+🚀 Server ready at http://localhost:4000/graphql
+```
+
+Open the URL and you will see the Keycloak login screen. First login with `developer/developer` as the username/password.
+
+Now you should see the GraphQL Playground.
+
+NOTE: The login page is shown because the Keycloak middleware is enforcing authentication on the `/graphql` endpoint using a `public` client configuration. A public client is being used so we can access the GraphQL Playground in the browser. In production, your GraphQL API would use a `bearer` client configuration and instead you would receive an `Access Denied` message.
+
+On the right side of the GraphQL Playground you will see a message:
+
+```
+{
+  "error": "Failed to fetch. Please check your connection"
+}
+```
+
+Although the browser has authenticated with the Keycloak server, the GraphQL playround isn't sending the keycloak `Authorization` header along with its requests to the GraphQL server. In the bottom left corner of the playground there is a field called **HTTP Headers** which will be added to requests sent by the playground.
+
+Use `scripts/getToken.js` to get a valid header for the `developer` user.
+
+```
+node scripts/getToken.js developer developer # username password
+
+{"Authorization":"Bearer <token string>"}
+```
+
+Copy the entire JSON object, then paste it into the HTTP Headers field in the playground. The error message should disappear.
+
+Now try the following query:
+
+```
+query {
+  hello
+}
+```
+
+You should see the result.
+
+```
+{
+  "data": {
+    "hello": "Hello developer"
+  }
+}
+```
+
+The `hasRole` directive checked that the user had the appropriate role and then the GraphQL resolver successfully executed. Let's change the role. Change the code in `examples/basic.js` to the code below and then restart the server.
+
+```js
+const typeDefs = gql`
+  type Query {
+    hello: String @hasRole(role: "admin")
+  }
+`
+```
+
+Now run the query in the playground again. You should see an error.
+
+```
+{
+  "errors": [
+    {
+      "message": "User is not authorized. Must have one of the following roles: [admin]",
+      "locations": [
+        {
+          "line": 2,
+          "column": 3
+        }
+      ],
+      "path": [
+        "hello"
+      ],
+      "extensions": <omitted>
+    }
+  ],
+  "data": {
+    "hello": null
+  }
+}
+```
+
+This time an error comes back saying the user does not have the right role. That's the full example! The process of running and trying the other examples is very similar. Feel free to try them or to look at the code!
