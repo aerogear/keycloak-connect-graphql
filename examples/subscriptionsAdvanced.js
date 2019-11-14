@@ -12,7 +12,8 @@ const {
   KeycloakTypeDefs,
   KeycloakSchemaDirectives,
   KeycloakSubscriptionHandler,
-  auth
+  auth,
+  hasRole
 } = require('../')
 
 
@@ -58,7 +59,7 @@ const resolvers = {
       subscribe: () => pubsub.asyncIterator(TOPIC)
     },
     testSubscriptionProtected: {
-      subscribe: auth(() => pubsub.asyncIterator(TOPIC))
+      subscribe: auth(hasRole('developer')(() => pubsub.asyncIterator(TOPIC)))
     }
   }
 }
@@ -77,9 +78,10 @@ const server = new ApolloServer({
       }
     }
   },
-  context: ({ req }) => {
+  context: ({ req, connection }) => {
+    const kauth = connection ? connection.context.kauth : new KeycloakContext({ req })
     return {
-      kauth: new KeycloakContext({ req })
+      kauth
     }
   }
 })

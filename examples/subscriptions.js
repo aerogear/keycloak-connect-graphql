@@ -69,9 +69,10 @@ const server = new ApolloServer({
     }
   },
   resolvers,
-  context: ({ req }) => {
+  context: ({ req, connection }) => {
+    const kauth = connection ? connection.context.kauth : new KeycloakContext({ req })
     return {
-      kauth: new KeycloakContext({ req })
+      kauth
     }
   }
 })
