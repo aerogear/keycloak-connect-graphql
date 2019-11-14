@@ -1,6 +1,6 @@
 {
   "name": "keycloak-connect-graphql",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Add Keycloak authentication and authorization to your GraphQL server.",
   "keywords": [
     "graphql",
