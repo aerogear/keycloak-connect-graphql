@@ -2,7 +2,9 @@ import test from 'ava'
 import Keycloak from '../src/KeycloakTypings'
 
 import { KeycloakSubscriptionHandler } from '../src/KeycloakSubscriptionHandler'
-import { Token } from '../src/KeycloakToken';
+import { Token } from './utils/KeycloakToken';
+
+const TEST_CLIENT_ID = 'voyager-testing'
 
 test('onSubscriptionConnect throws if no keycloak provided', async t => {
   t.throws(() => {
@@ -13,14 +15,9 @@ test('onSubscriptionConnect throws if no keycloak provided', async t => {
 
 test('onSubscriptionConnect throws if no connectionParams Provided', async t => {
   const stubKeycloak = {
-    config: {
-      clientId: 'voyager-testing',
-    },
     grantManager: {
-      validateToken: (token: string, type: 'string') => {
-        return new Promise((resolve, reject) => {
-          resolve(true)
-        })
+      createGrant: (token: any) => {
+        return { access_token: new Token(token.access_token, TEST_CLIENT_ID)}
       }
     }
   } as unknown as Keycloak.Keycloak
@@ -34,14 +31,9 @@ test('onSubscriptionConnect throws if no connectionParams Provided', async t => 
 
 test('onSubscriptionConnect throws if no connectionParams is not an object', async t => {
   const stubKeycloak = {
-    config: {
-      clientId: 'voyager-testing',
-    },
     grantManager: {
-      validateToken: (token: string, type: 'string') => {
-        return new Promise((resolve, reject) => {
-          resolve(true)
-        })
+      createGrant: (token: any) => {
+        return { access_token: new Token(token.access_token, TEST_CLIENT_ID)}
       }
     }
   } as unknown as Keycloak.Keycloak
@@ -56,14 +48,9 @@ test('onSubscriptionConnect throws if no connectionParams is not an object', asy
 
 test('onSubscriptionConnect throws if no Auth provided', async t => {
   const stubKeycloak = {
-    config: {
-      clientId: 'voyager-testing',
-    },
     grantManager: {
-      validateToken: (token: string, type: 'string') => {
-        return new Promise((resolve, reject) => {
-          resolve(true)
-        })
+      createGrant: (token: any) => {
+        return { access_token: new Token(token.access_token, TEST_CLIENT_ID)}
       }
     }
   } as unknown as Keycloak.Keycloak
@@ -76,16 +63,28 @@ test('onSubscriptionConnect throws if no Auth provided', async t => {
   }, 'Access Denied - missing Authorization field in connection parameters')
 })
 
+test('onSubscriptionConnect throws if "Authorization" field is not formed correctly', async t => {
+  const stubKeycloak = {
+    grantManager: {
+      createGrant: (token: any) => {
+        return { access_token: new Token(token.access_token, TEST_CLIENT_ID)}
+      }
+    }
+  } as unknown as Keycloak.Keycloak
+
+  const subscriptionHandler = new KeycloakSubscriptionHandler({ keycloak: stubKeycloak })
+  const connectionParams = { Authorization: '1234' }
+
+  await t.throwsAsync(async () => {
+    await subscriptionHandler.onSubscriptionConnect(connectionParams, {}, {})
+  }, 'Access Denied - Error: Invalid Authorization field in connection params. Must be in the format "Authorization": "Bearer <token string>"')
+})
+
 test('onSubscriptionConnect returns a token Object if the keycloak library considers it valid', async t => {
   const stubKeycloak = {
-    config: {
-      clientId: 'voyager-testing',
-    },
     grantManager: {
-      validateToken: (token: string, type: 'string') => {
-        return new Promise((resolve, reject) => {
-          resolve(true)
-        })
+      createGrant: (token: any) => {
+        return { access_token: new Token(token.access_token, TEST_CLIENT_ID)}
       }
     }
   } as unknown as Keycloak.Keycloak
@@ -96,19 +95,16 @@ test('onSubscriptionConnect returns a token Object if the keycloak library consi
   const connectionParams = { Authorization: tokenString }
 
   const token = await subscriptionHandler.onSubscriptionConnect(connectionParams, {}, {})
-  t.truthy(token instanceof Token)
+  t.truthy(token)
+  //@ts-ignore
+  t.truthy(token.content)
 })
 
 test('onSubscriptionConnect can also parse the token with lowercase \'bearer\'', async t => {
   const stubKeycloak = {
-    config: {
-      clientId: 'voyager-testing',
-    },
     grantManager: {
-      validateToken: (token: string, type: 'string') => {
-        return new Promise((resolve, reject) => {
-          resolve(true)
-        })
+      createGrant: (token: any) => {
+        return { access_token: new Token(token.access_token, TEST_CLIENT_ID)}
       }
     }
   } as unknown as Keycloak.Keycloak
@@ -119,19 +115,18 @@ test('onSubscriptionConnect can also parse the token with lowercase \'bearer\'',
   const connectionParams = { Authorization: tokenString }
 
   const token = await subscriptionHandler.onSubscriptionConnect(connectionParams, {}, {})
-  t.truthy(token instanceof Token)
+  
+  t.truthy(token)
+  //@ts-ignore
+  t.truthy(token.content)
 })
 
-test('the token object will have hasRole, hasRealmRole and hasPermissions if the', async t => {
+test('the token object will have hasRole function if grant is successfully created', async t => {
   const stubKeycloak = {
-    config: {
-      clientId: 'voyager-testing',
-    },
     grantManager: {
-      validateToken: (token: string, type: 'string') => {
-        return new Promise((resolve, reject) => {
-          resolve(true)
-        })
+      createGrant: (token: any) => {
+        console.log(`createGant called with token String ${tokenString}`)
+        return { access_token: new Token(token.access_token, TEST_CLIENT_ID)}
       }
     }
   } as unknown as Keycloak.Keycloak
@@ -143,19 +138,17 @@ test('the token object will have hasRole, hasRealmRole and hasPermissions if the
   const subscriptionHandler = new KeycloakSubscriptionHandler({ keycloak: stubKeycloak })
   const connectionParams = { Authorization: tokenString, clientId: 'voyager-testing' }
 
-  const token = await subscriptionHandler.onSubscriptionConnect(connectionParams, {}, {}) as Token
-  t.truthy(token instanceof Token)
+  const token = await subscriptionHandler.onSubscriptionConnect(connectionParams, {}, {})
+  t.truthy(token)
+  //@ts-ignore
   t.truthy(token.hasRole('tester'))
 })
 
-test('If the keycloak token validation fails, then onSubscriptionConnect will throw', async t => {
+test('If grant creation fails then onSubscriptionConnect will throw', async t => {
   const errorMsg = 'token is invalid'
   const stubKeycloak = {
-    config: {
-      clientId: 'voyager-testing',
-    },
     grantManager: {
-      validateToken: (token: string, type: 'string') => {
+      createGrant: (token: any) => {
         return new Promise((resolve, reject) => {
           reject(new Error(errorMsg))
         })
@@ -177,14 +170,9 @@ test('If the keycloak token validation fails, then onSubscriptionConnect will th
 
 test('onSubscriptionConnect with {protect: false} does not throw if no connectionParams Provided', async t => {
   const stubKeycloak = {
-    config: {
-      clientId: 'voyager-testing',
-    },
     grantManager: {
-      validateToken: (token: string, type: 'string') => {
-        return new Promise((resolve, reject) => {
-          resolve(true)
-        })
+      createGrant: (token: any) => {
+        return { access_token: new Token(token.access_token, TEST_CLIENT_ID)}
       }
     }
   } as unknown as Keycloak.Keycloak
@@ -198,14 +186,9 @@ test('onSubscriptionConnect with {protect: false} does not throw if no connectio
 
 test('onSubscriptionConnect with {protect: false} does not throw if connectionParams is not an object', async t => {
   const stubKeycloak = {
-    config: {
-      clientId: 'voyager-testing',
-    },
     grantManager: {
-      validateToken: (token: string, type: 'string') => {
-        return new Promise((resolve, reject) => {
-          resolve(true)
-        })
+      createGrant: (token: any) => {
+        return { access_token: new Token(token.access_token, TEST_CLIENT_ID)}
       }
     }
   } as unknown as Keycloak.Keycloak
@@ -220,14 +203,9 @@ test('onSubscriptionConnect with {protect: false} does not throw if connectionPa
 
 test('onSubscriptionConnect with {protect: false} does not throw if no Auth provided', async t => {
   const stubKeycloak = {
-    config: {
-      clientId: 'voyager-testing',
-    },
     grantManager: {
-      validateToken: (token: string, type: 'string') => {
-        return new Promise((resolve, reject) => {
-          resolve(true)
-        })
+      createGrant: (token: any) => {
+        return { access_token: new Token(token.access_token, TEST_CLIENT_ID)}
       }
     }
   } as unknown as Keycloak.Keycloak
