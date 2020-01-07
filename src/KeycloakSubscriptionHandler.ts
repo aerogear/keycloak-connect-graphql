@@ -72,20 +72,22 @@ export class KeycloakSubscriptionHandler {
       return
     }
     try {
-      const accessToken = this.getAccessTokenFromHeader(header)
-      const grant = await this.keycloak.grantManager.createGrant(accessToken)
+      // we don't use this naming style but
+      // createGrant expects it
+      const grant = await this.keycloak.grantManager.createGrant({ 
+        access_token: this.getAccessTokenFromHeader(header) 
+      })
+
       return grant.access_token as unknown as Keycloak.Token
     } catch (e) {
       throw new Error(`Access Denied - ${e}`)
     }
   }
 
-  private getAccessTokenFromHeader(header: any) {
+  private getAccessTokenFromHeader(header: any): string {
     if (header && typeof header === 'string' && (header.indexOf('bearer ') === 0 || header.indexOf('Bearer ') === 0)) {
       const tokenString = header.substring(7)
-      return {
-        access_token: tokenString
-      };
+      return tokenString
     } else {
       throw new Error('Invalid Authorization field in connection params. Must be in the format "Authorization": "Bearer <token string>"')
     }
