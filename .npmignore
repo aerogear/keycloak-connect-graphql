@@ -1,0 +1,13 @@
+.circleci/
+.nyc_output/
+.vscode/
+# were not publishing source so we don't need source maps either
+dist/*.js.map
+examples/
+scripts/
+src/
+test/
+.gitignore
+renovate.json
+tsconfig.*
+tslint*
