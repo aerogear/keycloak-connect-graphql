@@ -1,5 +1,4 @@
 import Keycloak from './KeycloakTypings'
-import { Token } from './KeycloakToken'
 import { KeycloakSubscriptionHandlerOptions } from './api'
 
 /**
@@ -55,7 +54,7 @@ export class KeycloakSubscriptionHandler {
    * @param webSocket 
    * @param context 
    */
-  public async onSubscriptionConnect(connectionParams: any, webSocket: any, context: any): Promise<Keycloak.Token | undefined | Error> {
+  public async onSubscriptionConnect(connectionParams: any, webSocket: any, context: any): Promise<Keycloak.Token | undefined> {
     if (!connectionParams || typeof connectionParams !== 'object') {
       if (this.protect === true) {
         throw new Error('Access Denied - missing connection parameters for Authentication')
@@ -72,20 +71,25 @@ export class KeycloakSubscriptionHandler {
       }
       return
     }
-    const token = this.getBearerTokenFromHeader(header, this.keycloak.config.clientId)
     try {
-      await this.keycloak.grantManager.validateToken(token, 'Bearer')
-      //@ts-ignore
-      return token
+      // we don't use this naming style but
+      // createGrant expects it
+      const grant = await this.keycloak.grantManager.createGrant({ 
+        access_token: this.getAccessTokenFromHeader(header) 
+      })
+
+      return grant.access_token as unknown as Keycloak.Token
     } catch (e) {
       throw new Error(`Access Denied - ${e}`)
     }
   }
 
-  private getBearerTokenFromHeader(header: any, clientId?: string) {
+  private getAccessTokenFromHeader(header: any): string {
     if (header && typeof header === 'string' && (header.indexOf('bearer ') === 0 || header.indexOf('Bearer ') === 0)) {
-      const token = header.substring(7)
-      return new Token(token, clientId)
+      const tokenString = header.substring(7)
+      return tokenString
+    } else {
+      throw new Error('Invalid Authorization field in connection params. Must be in the format "Authorization": "Bearer <token string>"')
     }
   }
 }
