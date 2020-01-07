@@ -2,7 +2,7 @@ version: '3'
 
 services:
   keycloak:
-    image: jboss/keycloak:3.4.3.Final
+    image: jboss/keycloak:8.0.1
     ports:
       - "8080:8080"
     environment:
