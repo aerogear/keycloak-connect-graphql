@@ -34,7 +34,7 @@
     "examples:seed": "node scripts/initKeycloak.js"
   },
   "dependencies": {
-    "apollo-server-express": "2.9.15",
+    "apollo-server-express": "2.9.16",
     "graphql-tools": "4.0.6",
     "keycloak-connect": "8.0.1"
   },
