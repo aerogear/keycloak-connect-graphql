@@ -53,9 +53,9 @@
     "keycloak-request-token": "0.1.0",
     "keycloak-admin": "1.13.0",
     "nyc": "15.0.0",
-    "sinon": "8.0.2",
+    "sinon": "8.0.4",
     "subscriptions-transport-ws": "0.9.16",
-    "ts-node": "8.5.4",
+    "ts-node": "8.6.1",
     "tslint": "5.20.1",
     "typescript": "3.7.4"
   },
