@@ -1,12 +1,12 @@
 const express = require('express')
 const { ApolloServer, gql } = require('apollo-server-express')
 const { configureKeycloak } = require('./lib/common')
-
+const cors = require("cors");
 const {
   KeycloakContext,
   KeycloakTypeDefs,
   KeycloakSchemaDirectives
-} = require('../')
+} = require('keycloak-connect-graphql')
 
 const app = express()
 
@@ -17,7 +17,7 @@ const { keycloak } = configureKeycloak(app, graphqlPath)
 
 // Ensure entire GraphQL Api can only be accessed by authenticated users
 app.use(graphqlPath, keycloak.protect())
-
+app.use(cors());
 const typeDefs = gql`
   type Query {
     hello: String @hasRole(role: "developer")
