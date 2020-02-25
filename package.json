@@ -17,7 +17,7 @@
     "url": "https://github.com/aerogear/keycloak-connect-graphql"
   },
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "types/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
