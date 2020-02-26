@@ -6,7 +6,7 @@ const {
   KeycloakContext,
   KeycloakTypeDefs,
   KeycloakSchemaDirectives
-} = require('keycloak-connect-graphql')
+} = require('../')
 
 const app = express()
 
