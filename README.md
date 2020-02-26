@@ -23,8 +23,19 @@ Based on the [keycloak-connect](https://github.com/keycloak/keycloak-nodejs-conn
 
 ## Getting Started
 
+Install library 
 ```bash
-npm install keycloak-connect-graphql
+npm install --save keycloak-connect-graphql
+```
+
+Install required dependencies:
+```bash
+npm install --save  graphql graphql-tools keycloak-connect
+```
+
+Install of the Apollo Server libraries 
+```bash
+npm install --save apollo-server-express 
 ```
 
 There are 3 steps to set up `keycloak-connect-graphql` in your application.
@@ -299,6 +310,9 @@ The `examples` folder contains runnable examples that demonstrate the various wa
 * `examples/authMiddlewares` - Shows usage of the `auth` and `hasRole` middlewares.
 * `subscriptions` - Shows basic subscriptions setup, requiring all subscriptions to be authenticated.
 * `subscriptionsAdvanced` - Shows subscriptions that use the `auth` and `hasRole` middlewares directly on subscription resolvers.
+
+> NOTE: Examples using unrelased code that needs to be compiled before use.
+Please run `npm run compile` to compile source code before running examples.
 
 ## Setting up the Examples
 
