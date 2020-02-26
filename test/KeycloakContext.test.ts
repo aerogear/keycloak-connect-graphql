@@ -1,7 +1,7 @@
 import test from 'ava'
 import Keycloak from 'keycloak-connect'
 
-import { KeycloakContext, KeycloakContextBase, KeycloakSubscriptionContext } from '../src/KeycloakContext'
+import { KeycloakContext, KeycloakContextBase, KeycloakSubscriptionContext, GrantedRequest } from '../src/KeycloakContext'
 
 test('KeycloakContextBase accessToken is the access_token in req.kauth', (t) => {
   const token = {
@@ -47,7 +47,7 @@ test('KeycloakContext accessToken is the access_token in req.kauth', (t) => {
         }
       }
     }
-  } as Keycloak.GrantedRequest
+  } as GrantedRequest
 
   const provider = new KeycloakContext({ req })
   const token = req.kauth.grant && req.kauth.grant.access_token ? req.kauth.grant.access_token : undefined
@@ -70,7 +70,7 @@ test('KeycloakContext hasRole calls hasRole in the access_token', (t) => {
         }
       }
     }
-  } as Keycloak.GrantedRequest
+  } as GrantedRequest
 
   const provider = new KeycloakContext({ req })
   t.truthy(provider.hasRole(''))
@@ -90,7 +90,7 @@ test('KeycloakContext.isAuthenticated is true when token is defined and isExpire
         }
       }
     }
-  } as Keycloak.GrantedRequest
+  } as GrantedRequest
 
   const provider = new KeycloakContext({ req })
   t.truthy(provider.isAuthenticated())
@@ -110,7 +110,7 @@ test('KeycloakContext.isAuthenticated is false when token is defined but isExpir
         }
       }
     }
-  } as Keycloak.GrantedRequest
+  } as GrantedRequest
 
   const provider = new KeycloakContext({ req })
   t.false(provider.isAuthenticated())
@@ -130,7 +130,7 @@ test('KeycloakContext.hasRole is false if token is expired', (t) => {
         }
       }
     }
-  } as Keycloak.GrantedRequest
+  } as GrantedRequest
 
   const provider = new KeycloakContext({ req })
   t.false(provider.hasRole(''))

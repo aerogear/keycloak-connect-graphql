@@ -33,7 +33,7 @@ Install required dependencies:
 npm install --save  graphql graphql-tools keycloak-connect
 ```
 
-Install of the Apollo Server libraries 
+Install one of the Apollo Server libraries 
 ```bash
 npm install --save apollo-server-express 
 ```
