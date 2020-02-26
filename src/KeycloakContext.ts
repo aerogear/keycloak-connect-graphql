@@ -1,5 +1,10 @@
 import { AuthContextProvider } from './api'
 import Keycloak from 'keycloak-connect'
+import { Grant } from 'keycloak-connect'
+
+export interface GrantedRequest extends Request {
+  kauth: { grant?: Grant };
+}
 
 export const CONTEXT_KEY = 'kauth'
 
@@ -66,10 +71,10 @@ export class KeycloakContextBase implements AuthContextProvider {
  * 
  */
 export class KeycloakContext extends KeycloakContextBase implements AuthContextProvider {
-  public readonly request: Keycloak.GrantedRequest
+  public readonly request: GrantedRequest
   public readonly accessToken: Keycloak.Token | undefined
 
-  constructor ({ req }: { req: Keycloak.GrantedRequest }) {
+  constructor ({ req }: { req: GrantedRequest }) {
     const token = (req && req.kauth && req.kauth.grant) ? req.kauth.grant.access_token : undefined
     super(token)
     this.request = req
