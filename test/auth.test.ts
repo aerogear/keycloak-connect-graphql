@@ -6,7 +6,7 @@ import { GraphQLSchema } from 'graphql'
 import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
 import { AuthDirective } from '../src/directives/schemaDirectiveVisitors'
 
-import { KeycloakContext } from '../src/KeycloakContext'
+import { KeycloakContext, GrantedRequest } from '../src/KeycloakContext'
 
 const createHasRoleDirective = () => {
   return new AuthDirective({
@@ -43,7 +43,7 @@ test('happy path: context.kauth.isAuthenticated() is called, then original resol
         }
       }
     }
-  } as Keycloak.GrantedRequest
+  } as GrantedRequest
 
   const context = {
     request: req,
@@ -85,7 +85,7 @@ test('context.kauth.isAuthenticated() is called, even if field has no resolver',
         }
       }
     }
-  } as Keycloak.GrantedRequest
+  } as GrantedRequest
 
   const context = {
     request: req,
@@ -130,7 +130,7 @@ test('resolver will throw if context.kauth is not present', async (t) => {
         }
       }
     }
-  } as Keycloak.GrantedRequest
+  } as GrantedRequest
 
   const context = {
     request: req
@@ -161,7 +161,7 @@ test('resolver will throw if context.kauth present but context.kauth.isAuthentic
 
   const root = {}
   const args = {}
-  const req = {} as Keycloak.GrantedRequest
+  const req = {} as GrantedRequest
 
   const context = {
     request: req,

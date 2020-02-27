@@ -1,6 +1,6 @@
 {
   "name": "keycloak-connect-graphql",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "Add Keycloak authentication and authorization to your GraphQL server.",
   "keywords": [
     "graphql",
@@ -34,9 +34,6 @@
     "examples:seed": "node scripts/initKeycloak.js"
   },
   "dependencies": {
-    "apollo-server-express": "2.9.16",
-    "graphql-tools": "4.0.6",
-    "keycloak-connect": "8.0.1"
   },
   "devDependencies": {
     "@types/express-session": "1.15.16",
@@ -58,10 +55,15 @@
     "subscriptions-transport-ws": "0.9.16",
     "ts-node": "8.6.2",
     "tslint": "5.20.1",
-    "typescript": "3.7.5"
+    "typescript": "3.7.5",
+    "apollo-server-express": "2.9.16",
+    "graphql-tools": "4.0.6",
+    "keycloak-connect": "8.0.1"
   },
   "peerDependencies": {
-    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0"
+    "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0",
+    "graphql-tools": ">=4.0.0",
+    "keycloak-connect": ">=7.0.0"
   },
   "nyc": {
     "extension": [

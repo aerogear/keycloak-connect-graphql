@@ -54,7 +54,7 @@ export class KeycloakSubscriptionHandler {
    * @param webSocket 
    * @param context 
    */
-  public async onSubscriptionConnect(connectionParams: any, webSocket: any, context: any): Promise<Keycloak.Token | undefined> {
+  public async onSubscriptionConnect(connectionParams: any, webSocket?: any, context?: any): Promise<Keycloak.Token | undefined> {
     if (!connectionParams || typeof connectionParams !== 'object') {
       if (this.protect === true) {
         throw new Error('Access Denied - missing connection parameters for Authentication')
