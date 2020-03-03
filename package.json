@@ -55,7 +55,7 @@
     "ts-node": "8.6.2",
     "tslint": "5.20.1",
     "typescript": "3.8.3",
-    "apollo-server-express": "2.10.1",
+    "apollo-server-express": "2.11.0",
     "graphql-tools": "4.0.7",
     "keycloak-connect": "8.0.2"
   },
