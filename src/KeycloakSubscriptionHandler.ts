@@ -57,7 +57,9 @@ export class KeycloakSubscriptionHandler {
   public async onSubscriptionConnect(connectionParams: any, webSocket?: any, context?: any): Promise<Keycloak.Token | undefined> {
     if (!connectionParams || typeof connectionParams !== 'object') {
       if (this.protect === true) {
-        throw new Error('Access Denied - missing connection parameters for Authentication')
+        const error: any = new Error(`Access Denied - missing connection parameters for Authentication`);
+        error.code = "ACCESS_DENIED"
+        throw error
       }
       return
     }
@@ -67,7 +69,9 @@ export class KeycloakSubscriptionHandler {
                   || connectionParams.auth
     if (!header) {
       if (this.protect === true) {
-        throw new Error('Access Denied - missing Authorization field in connection parameters')
+        const error: any = new Error(`Access Denied - missing Authorization field in connection parameters`);
+        error.code = "ACCESS_DENIED"
+        throw error
       }
       return
     }
@@ -80,7 +84,9 @@ export class KeycloakSubscriptionHandler {
 
       return grant.access_token as unknown as Keycloak.Token
     } catch (e) {
-      throw new Error(`Access Denied - ${e}`)
+      const error: any = new Error(`Access Denied - ${e}`);
+      error.code = "ACCESS_DENIED"
+      throw error
     }
   }
 
