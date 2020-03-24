@@ -196,10 +196,8 @@ Example response from GraphQL Server could look as follows:
 
 Possible error codes: 
 
-- `NOT_AUTHENTICATED`: returned when user is not authorized to access API because it requires login
+- `UNAUTHENTICATED`: returned when user is not authenticated to access API because it requires login
 - `FORBIDDEN`: returned when user do not have permission to perform operation 
-- `ACCESS_DENIED`: returned when client did not provided any authentication information. U
-sually means missconfiguration on the client
 
 ## Authentication and Authorization on Subscriptions
 
