@@ -40,7 +40,9 @@ import { CONTEXT_KEY } from '../KeycloakContext'
  */
 export const auth = (next: Function) => (root: any, args: any, context: any, info: any) => {
   if (!context[CONTEXT_KEY] || !context[CONTEXT_KEY].isAuthenticated()) {
-    throw new Error(`User not Authenticated`)
+    const error: any = new Error(`User not Authenticated`);
+    error.code = "NOT_AUTHENTICATED"
+    throw error
   }
   return next(root, args, context, info)
 }
@@ -94,7 +96,9 @@ export const auth = (next: Function) => (root: any, args: any, context: any, inf
  */
 export const hasRole = (roles: Array<string>) => (next: Function) => (root: any, args: any, context: any, info: any) => {
   if (!context[CONTEXT_KEY] || !context[CONTEXT_KEY].isAuthenticated()) {
-    throw new Error(`User not Authenticated`)
+    const error: any = new Error(`User not Authenticated`);
+    error.code = "NOT_AUTHENTICATED"
+    throw error
   }
 
   if (typeof roles === 'string') {
@@ -111,7 +115,9 @@ export const hasRole = (roles: Array<string>) => (next: Function) => (root: any,
   }
 
   if (!foundRole) {
-    throw new Error(`User is not authorized. Must have one of the following roles: [${roles}]`)
+    const error: any = new Error(`User is not authorized. Must have one of the following roles: [${roles}]`);
+    error.code = "FORBIDDEN"
+    throw error
   }
 
   return next(root, args, context, info)
