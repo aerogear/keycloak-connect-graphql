@@ -176,6 +176,31 @@ It also is possible to check for realm roles and application roles.
 * `hasRole('realm:admin')` will check the logged in user has the admin realm role
 * `hasRole('some-other-app:admin')` will check the loged in user has the admin realm role in a different application
 
+### Error Codes
+
+Library will return specific GraphQL errors to the client that can
+be differenciated by using error codes.
+
+Example response from GraphQL Server could look as follows:
+
+```json
+{
+   "errors":[
+      {
+        "message":"User is not authorized. Must have one of the following roles: [admin]",
+        "code": "FORBIDDEN"
+      }
+   ]
+}
+```
+
+Possible error codes: 
+
+- `NOT_AUTHENTICATED`: returned when user is not authorized to access API because it requires login
+- `FORBIDDEN`: returned when user do not have permission to perform operation 
+- `ACCESS_DENIED`: returned when client did not provided any authentication information. U
+sually means missconfiguration on the client
+
 ## Authentication and Authorization on Subscriptions
 
 The `KeycloakSubscriptionHandler` provides a way to validate incoming websocket connections to `SubscriptionServer` from [`subscriptions-transport-ws`](https://www.npmjs.com/package/subscriptions-transport-ws) for subscriptions and add the keycloak user token to the `context` in subscription resolvers.
