@@ -40,7 +40,7 @@ export class KeycloakSubscriptionHandler {
    * 
    * @param options 
    */
-  constructor (options: KeycloakSubscriptionHandlerOptions) {
+  constructor(options: KeycloakSubscriptionHandlerOptions) {
     if (!options || !options.keycloak) {
       throw new Error('missing keycloak instance in options')
     }
@@ -58,35 +58,31 @@ export class KeycloakSubscriptionHandler {
     if (!connectionParams || typeof connectionParams !== 'object') {
       if (this.protect === true) {
         const error: any = new Error(`Access Denied - missing connection parameters for Authentication`);
-        error.code = "ACCESS_DENIED"
+        error.code = "UNAUTHENTICATED"
         throw error
       }
       return
     }
     const header = connectionParams.Authorization
-                  || connectionParams.authorization
-                  || connectionParams.Auth
-                  || connectionParams.auth
+      || connectionParams.authorization
+      || connectionParams.Auth
+      || connectionParams.auth
     if (!header) {
       if (this.protect === true) {
-        const error: any = new Error(`Access Denied - missing Authorization field in connection parameters`);
-        error.code = "ACCESS_DENIED"
-        throw error
+        throw new Error(`Access Denied - missing Authorization field in connection parameters`);
       }
       return
     }
     try {
       // we don't use this naming style but
       // createGrant expects it
-      const grant = await this.keycloak.grantManager.createGrant({ 
-        access_token: this.getAccessTokenFromHeader(header) 
+      const grant = await this.keycloak.grantManager.createGrant({
+        access_token: this.getAccessTokenFromHeader(header)
       })
 
       return grant.access_token as unknown as Keycloak.Token
     } catch (e) {
-      const error: any = new Error(`Access Denied - ${e}`);
-      error.code = "ACCESS_DENIED"
-      throw error
+      throw new Error(`Access Denied - ${e}`);
     }
   }
 
