@@ -325,7 +325,7 @@ See the Apollo Client documentation for [Authentication Params Over Websocket](h
 See the Keycloak Documentation for the [Keycloak JavaScript Adapter](https://www.keycloak.org/docs/latest/securing_apps/index.html#_javascript_adapter)
 
 ## Usage with Apollo Federation
-As your data graph grows, however, it can become inefficient or even difficult to represent the graph with a single, monolithic GraphQL server. To remedy this, you can divide your data graph's implementation across multiple composable services with **Apollo Federation**.
+`keycloak-connect-graphql` can be used with [Apollo Federation](https://www.apollographql.com/docs/apollo-server/federation/introduction/) for your distributed GraphQL service.
 
 There are 4 steps to set up `keycloak-connect-graphql` in your distributed application using [Apollo Federation](https://www.apollographql.com/docs/apollo-server/federation/introduction/). The **first 3 steps** you should do in **every service** and for the step 3 you should also do to `gateway` service, then the step 4 just in a `gateway` service. 
 1. Add the `KeycloakTypeDefs` along with your own type defs.
