@@ -324,6 +324,50 @@ See the Apollo Client documentation for [Authentication Params Over Websocket](h
 
 See the Keycloak Documentation for the [Keycloak JavaScript Adapter](https://www.keycloak.org/docs/latest/securing_apps/index.html#_javascript_adapter)
 
+## Usage with Apollo Federation
+As your data graph grows, however, it can become inefficient or even difficult to represent the graph with a single, monolithic GraphQL server. To remedy this, you can divide your data graph's implementation across multiple composable services with **Apollo Federation**.
+
+There are 4 steps to set up `keycloak-connect-graphql` in your distributed application using [Apollo Federation](https://www.apollographql.com/docs/apollo-server/federation/introduction/). The **first 3 steps** you should do in **every service** and for the step 3 you should also do to `gateway` service, then the step 4 just in a `gateway` service. 
+1. Add the `KeycloakTypeDefs` along with your own type defs.
+2. Add the `KeycloakSchemaDirectives` (Apollo Server)
+3. Add the `KeycloakContext` to context.kauth
+4. Setup the gateway to pass `Authorization` token to all services.  
+
+For the first 3 steps, you could see example at [Getting Started](#getting-started) section. So, The example below shows how to setup the `gateway` service.
+
+```javascript
+const { ApolloGateway, RemoteGraphQLDataSource  } = require("@apollo/gateway");
+
+const gateway = new ApolloGateway({
+  serviceList: [
+    { name: "accounts", url: "http://localhost:4001/graphql" },
+    { name: "reviews", url: "http://localhost:4002/graphql" },
+    { name: "products", url: "http://localhost:4003/graphql" },
+    { name: "inventory", url: "http://localhost:4004/graphql" }
+    // other services might be entry
+  ],
+  buildService({ name, url }) {
+    return new RemoteGraphQLDataSource({
+      url,
+      willSendRequest({ request, context }) {
+        // 4. Setup the gateway to pass `Authorization` token to all services.
+        // Passing Keycloak Access Token to services.
+        if (context.kauth && context.kauth.accessToken) {
+          request.http.headers.set('Authorization', 'bearer '+ context.kauth.accessToken.token);
+        }
+      }
+    })
+  },
+
+  // Experimental: Enabling this enables the query plan view in Playground.
+  __exposeQueryPlanExperimental: false,
+});
+```
+
+See the example project for [Apollo Federation with Keycloak](https://github.com/ilmimris/apollofederation-keycloak-demo).
+
+> Apollo Federation does not currently support GraphQL subscription operations.
+ 
 ## Examples
 
 The `examples` folder contains runnable examples that demonstrate the various ways to use this library.
