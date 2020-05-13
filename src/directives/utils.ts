@@ -7,7 +7,7 @@ import { CONTEXT_KEY } from '../KeycloakContext'
  */
 export function isAuthorizedByRole(roles: string[], context?: any) {
   if (!(context && context[CONTEXT_KEY])) {
-    console.error('context.kauth is missing. Keycloak integration is probably misconfigured')  
+    console.error(`context.${CONTEXT_KEY} is missing. Keycloak integration is probably misconfigured`)  
     return false
   }
 
