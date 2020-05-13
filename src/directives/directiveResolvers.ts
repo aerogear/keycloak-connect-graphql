@@ -1,4 +1,5 @@
 import { CONTEXT_KEY } from '../KeycloakContext'
+import { isAuthorizedByRole } from './utils'
 
 /**
  * 
@@ -104,17 +105,8 @@ export const hasRole = (roles: Array<string>) => (next: Function) => (root: any,
   if (typeof roles === 'string') {
     roles = [roles]
   }
-
-  let foundRole = null // this will be the role the user was successfully authorized on
-
-  for (let role of roles) {
-    if (context[CONTEXT_KEY].hasRole(role)) {
-      foundRole = role
-      break
-    }
-  }
-
-  if (!foundRole) {
+    
+  if (!isAuthorizedByRole(roles, context)) {
     const error: any = new Error(`User is not authorized. Must have one of the following roles: [${roles}]`);
     error.code = "FORBIDDEN"
     throw error
