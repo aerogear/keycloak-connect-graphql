@@ -37,8 +37,8 @@
   "devDependencies": {
     "@types/express-session": "1.17.0",
     "@types/graphql": "14.2.3",
-    "@types/keycloak-connect": "4.5.3",
-    "@types/node": "10.17.21",
+    "@types/keycloak-connect": "4.5.4",
+    "@types/node": "10.17.24",
     "@types/sinon": "7.5.2",
     "ava": "2.4.0",
     "cors": "2.8.5",
@@ -52,9 +52,9 @@
     "nyc": "15.0.1",
     "sinon": "8.1.1",
     "subscriptions-transport-ws": "0.9.16",
-    "ts-node": "8.10.1",
+    "ts-node": "8.10.2",
     "tslint": "5.20.1",
-    "typescript": "3.9.2",
+    "typescript": "3.9.3",
     "apollo-server-express": "2.13.1",
     "graphql-tools": "6.0.5",
     "keycloak-connect": "8.0.2"
