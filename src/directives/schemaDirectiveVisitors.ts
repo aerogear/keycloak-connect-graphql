@@ -1,7 +1,7 @@
 import { defaultFieldResolver, GraphQLSchema } from 'graphql'
 import { SchemaDirectiveVisitor } from 'graphql-tools'
 import { auth, hasRole } from './directiveResolvers'
-import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
+import { VisitableSchemaType } from 'graphql-tools'
 
 export class AuthDirective extends SchemaDirectiveVisitor {
 
