@@ -3,7 +3,7 @@ import sinon from 'sinon'
 
 import Keycloak from 'keycloak-connect'
 import { GraphQLSchema } from 'graphql'
-import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor'
+import { VisitableSchemaType } from 'graphql-tools'
 import { HasRoleDirective } from '../src/directives/schemaDirectiveVisitors'
 import { KeycloakContext, GrantedRequest } from '../src/KeycloakContext'
 
