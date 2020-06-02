@@ -1,21 +1,21 @@
 import { defaultFieldResolver, GraphQLSchema } from 'graphql'
-import { SchemaDirectiveVisitor } from 'graphql-tools'
+import { SchemaDirectiveVisitor } from '@graphql-tools/utils'
 import { auth, hasRole } from './directiveResolvers'
-import { VisitableSchemaType } from 'graphql-tools'
+import { VisitableSchemaType } from '@graphql-tools/utils'
 
 export class AuthDirective extends SchemaDirectiveVisitor {
 
-  constructor (config: {
-      name: string
-      visitedType: VisitableSchemaType
-      schema: GraphQLSchema
-      context: { [key: string]: any }
-    }) {
-    // see https://github.com/apollographql/graphql-tools/issues/837
-    super(config as any)
+  constructor(config: {
+    name: string
+    visitedType: VisitableSchemaType
+    schema: GraphQLSchema
+    args: {},
+    context: { [key: string]: any }
+  }) {
+    super(config)
   }
 
-  public visitFieldDefinition (field: any) {
+  public visitFieldDefinition(field: any) {
     const { resolve = defaultFieldResolver } = field
     field.resolve = auth(resolve)
   }
@@ -23,18 +23,17 @@ export class AuthDirective extends SchemaDirectiveVisitor {
 
 export class HasRoleDirective extends SchemaDirectiveVisitor {
 
-  constructor (config: {
-      name: string
-      args: { [name: string]: any }
-      visitedType: VisitableSchemaType
-      schema: GraphQLSchema
-      context: { [key: string]: any }
-    }) {
-    // see https://github.com/apollographql/graphql-tools/issues/837
-    super(config as any)
+  constructor(config: {
+    name: string
+    args: { [name: string]: any }
+    visitedType: VisitableSchemaType
+    schema: GraphQLSchema
+    context: { [key: string]: any }
+  }) {
+    super(config)
   }
 
-  public visitFieldDefinition (field: any) {
+  public visitFieldDefinition(field: any) {
     const { resolve = defaultFieldResolver } = field
     const roles = this.parseAndValidateArgs(this.args)
     field.resolve = hasRole(roles)(resolve)
@@ -45,7 +44,7 @@ export class HasRoleDirective extends SchemaDirectiveVisitor {
    * validate a potential string or array of values
    * if an array is provided, cast all values to strings
    */
-  public parseAndValidateArgs (args: {[name: string]: any}): Array<string> {
+  public parseAndValidateArgs(args: { [name: string]: any }): Array<string> {
     const keys = Object.keys(args)
 
     if (keys.length === 1 && keys[0] === 'role') {

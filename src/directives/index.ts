@@ -1,4 +1,4 @@
-import { SchemaDirectiveVisitor } from 'graphql-tools'
+import { SchemaDirectiveVisitor } from '@graphql-tools/utils'
 import { HasRoleDirective, AuthDirective } from './schemaDirectiveVisitors'
 
 export type SchemaDirectiveMap = Record<string, typeof SchemaDirectiveVisitor>

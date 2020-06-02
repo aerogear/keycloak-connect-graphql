@@ -30,7 +30,7 @@ npm install --save keycloak-connect-graphql
 
 Install required dependencies:
 ```bash
-npm install --save  graphql graphql-tools keycloak-connect
+npm install --save  graphql keycloak-connect
 ```
 
 Install one of the Apollo Server libraries 
