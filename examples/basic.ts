@@ -18,7 +18,7 @@ const { keycloak } = configureKeycloak(app, graphqlPath)
 // Ensure entire GraphQL Api can only be accessed by authenticated users
 app.use(graphqlPath, keycloak.protect())
 app.use(cors());
-const typeDefs = gql`
+const typeDefs = `
   type Query {
     hello: String @hasRole(role: "developer")
   }
@@ -39,11 +39,12 @@ const resolvers = {
 
 const server = new ApolloServer({
   typeDefs: [KeycloakTypeDefs, typeDefs],
-  schemaDirectives: KeycloakSchemaDirectives,
+  // See  https://github.com/ardatan/graphql-tools/issues/1581
+  schemaDirectives: KeycloakSchemaDirectives as any,
   resolvers,
   context: ({ req }) => {
     return {
-      kauth: new KeycloakContext({ req })
+      kauth: new KeycloakContext({ req : req as any })
     }
   }
 })
