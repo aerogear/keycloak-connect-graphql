@@ -20,7 +20,7 @@ app.use(graphqlPath, keycloak.protect())
 app.use(cors());
 const typeDefs = `
   type Query {
-    hello: String @hasRole(role: "admin")
+    hello: String @hasRole(role: "developer")
   }
 `
 
