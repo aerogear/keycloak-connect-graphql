@@ -6,7 +6,7 @@ import {
   KeycloakContext,
   KeycloakTypeDefs,
   KeycloakSchemaDirectives
-} from '../'
+} from '../dist/index'
 
 const app = express()
 
