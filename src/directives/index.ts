@@ -1,7 +1,8 @@
 import { SchemaDirectiveVisitor } from '@graphql-tools/utils'
 import { HasRoleDirective, AuthDirective } from './schemaDirectiveVisitors'
 
-export type SchemaDirectiveMap = Record<string, typeof SchemaDirectiveVisitor>
+// Using any as there is only theoretical incompatiblity between graphql-tools and apollo library
+export type SchemaDirectiveMap = Record<string, any>
 
 /**
  * Object that contains directive implementations for Apollo Server. Pass this into Apollo Server

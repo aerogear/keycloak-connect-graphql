@@ -1,12 +1,12 @@
 import express from 'express'
 import { ApolloServer, gql } from 'apollo-server-express'
-import { configureKeycloak } from './lib/common'
+import { configureKeycloak } from '../lib/common'
 import cors from "cors"
 import {
   KeycloakContext,
   KeycloakTypeDefs,
   KeycloakSchemaDirectives
-} from '../dist/index'
+} from '../../dist/index'
 
 const app = express()
 
@@ -20,7 +20,7 @@ app.use(graphqlPath, keycloak.protect())
 app.use(cors());
 const typeDefs = `
   type Query {
-    hello: String @hasRole(role: "developer")
+    hello: String @hasRole(role: "admin")
   }
 `
 
@@ -40,7 +40,7 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs: [KeycloakTypeDefs, typeDefs],
   // See  https://github.com/ardatan/graphql-tools/issues/1581
-  schemaDirectives: KeycloakSchemaDirectives as any,
+  schemaDirectives: KeycloakSchemaDirectives,
   resolvers,
   context: ({ req }) => {
     return {
