@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "config:base",
-    ":pinVersions",
-    ":pinAllExceptPeerDependencies"
-  ],
-  "groupName":"all"
+  "extends": ["config:base", ":pinVersions", ":pinAllExceptPeerDependencies"],
+  "groupName": "all",
+  "ignoreDeps": ["ava"]
 }
