@@ -57,7 +57,7 @@
     "ts-node": "8.10.2",
     "tslint": "5.20.1",
     "typescript": "3.9.3",
-    "apollo-server-express": "2.14.1",
+    "apollo-server-express": "2.14.2",
     "keycloak-connect": "11.0.1"
   },
   "peerDependencies": {
