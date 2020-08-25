@@ -58,7 +58,7 @@
     "tslint": "5.20.1",
     "typescript": "3.9.3",
     "apollo-server-express": "2.14.1",
-    "keycloak-connect": "10.0.2"
+    "keycloak-connect": "11.0.1"
   },
   "peerDependencies": {
     "graphql": "^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0",
