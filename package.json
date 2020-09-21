@@ -1,6 +1,6 @@
 {
   "name": "keycloak-connect-graphql",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Add Keycloak authentication and authorization to your GraphQL server.",
   "keywords": [
     "graphql",
@@ -22,7 +22,7 @@
     "access": "public"
   },
   "scripts": {
-    "compile": "tsc --build tsconfig.json",
+    "compile": "tsc --build",
     "watch": "tsc --build tsconfig.json --watch",
     "compile:clean": "tsc --build tsconfig.json --clean",
     "test": "nyc ava -v",
