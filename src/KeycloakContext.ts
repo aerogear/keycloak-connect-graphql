@@ -1,6 +1,7 @@
 import { AuthContextProvider } from './api'
 import Keycloak from 'keycloak-connect'
 import { Grant } from 'keycloak-connect'
+import { Request } from 'express'
 
 export interface GrantedRequest extends Request {
   kauth: { grant?: Grant };
