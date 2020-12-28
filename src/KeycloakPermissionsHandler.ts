@@ -11,13 +11,13 @@ interface PermissionsToken extends Token {
     hasPermissions(resource: string, scope: string | undefined): boolean;
 }
 
-export class KeycloakPermissionsHandlerContext {
+export class KeycloakPermissionsHandler {
     private permissionsToken: PermissionsToken | undefined;
     constructor(private keycloak: Keycloak, private req: GrantedRequest, private config: AuthorizationConfiguration) {
         this.permissionsToken = this.req.kauth.grant?.access_token as PermissionsToken;
     }
 
-    handlePermissions(permissions: string[] | string, handler: (r: string, s: string) => boolean) {
+    handlePermissions(permissions: string[] | string, handler: (r: string, s: string | undefined ) => boolean) {
         if (typeof permissions === "string") {
             permissions = [permissions];
         }
@@ -25,7 +25,7 @@ export class KeycloakPermissionsHandlerContext {
         for (let i = 0; i < permissions.length; i++) {
             const expected = permissions[i].split(':');
             const resource = expected[0];
-            let scope: string = "";
+            let scope: string | undefined = undefined;
 
             if (expected.length > 1) {
                 scope = expected[1];
@@ -49,27 +49,21 @@ export class KeycloakPermissionsHandlerContext {
 
         if (this.permissionsToken) {
             if (this.handlePermissions(expectedPermissions, (resource, scope) => {
-                // using untyped request to make it accessible not exposed in .d.ts functionalities
                 if (this.permissionsToken?.hasPermissions(resource, scope)) {
                     return true;
                 }
                 return false;
             })) {
-                // if successfully checked -> it's all ok
                 return true;
             }
         }
 
-         // we need to request authorization data
          let authzRequest: AuthZRequest = {
              audience: this.config.resource_server_id,
-             response_mode: this.config.response_mode,
+             response_mode: this.config.response_mode ?? "permissions",
              permissions: new Array<{ id: string, scopes: string[] }>(),
-             claim_token: undefined,
-             claim_token_format: undefined
          };
 
-        // use the loop in handlePermissions to populate authorization request permissionss
         this.handlePermissions(expectedPermissions, (resource, scope) => {
             const permissions = { id: resource, scopes: new Array<string>() };
             if (scope) {
@@ -86,15 +80,15 @@ export class KeycloakPermissionsHandlerContext {
             const claims = this.config.claims(this.req);
 
             if (claims) {
-                authzRequest.claim_token = Buffer.from(JSON.stringify(claims)).toString('base64');
-                authzRequest.claim_token_format = 'urn:ietf:params:oauth:token-type:jwt';
+                authzRequest.claim_token = Buffer.from(JSON.stringify(claims)).toString("base64");
+                authzRequest.claim_token_format = "urn:ietf:params:oauth:token-type:jwt";
             }
         }
 
-        if (!this.config.response_mode || this.config.response_mode === 'permissions') {
+        if (this.config.response_mode === "permissions") {
             try {
                 await this.keycloak.checkPermissions(authzRequest, this.req, (permissions: any) => {
-                    if (this.handlePermissions(expectedPermissions, (resource: string, scope: string) => {
+                    if (this.handlePermissions(expectedPermissions, (resource: string, scope: string | undefined) => {
                         if (!permissions || permissions.length === 0) {
                             return false;
                         }

@@ -2,6 +2,7 @@ import { AuthContextProvider } from './api'
 import Keycloak from 'keycloak-connect'
 import { Grant } from 'keycloak-connect'
 import { Request } from 'express'
+import { AuthorizationConfiguration, KeycloakPermissionsHandler } from './KeycloakPermissionsHandler'
 
 export interface GrantedRequest extends Request {
   kauth: { grant?: Grant };
@@ -72,13 +73,17 @@ export class KeycloakContextBase implements AuthContextProvider {
  * 
  */
 export class KeycloakContext extends KeycloakContextBase implements AuthContextProvider {
+  private readonly permissionsHandler: KeycloakPermissionsHandler | undefined
   public readonly request: GrantedRequest
   public readonly accessToken: Keycloak.Token | undefined
 
-  constructor ({ req }: { req: GrantedRequest }) {
+  constructor ({ req }: { req: GrantedRequest }, keycloak: Keycloak.Keycloak | undefined = undefined, authorizationConfiguration: AuthorizationConfiguration | undefined = undefined) {
     const token = (req && req.kauth && req.kauth.grant) ? req.kauth.grant.access_token : undefined
     super(token)
     this.request = req
+    if (keycloak && authorizationConfiguration) {
+      this.permissionsHandler = new KeycloakPermissionsHandler(keycloak, req, authorizationConfiguration)
+    }
   }
 }
 
