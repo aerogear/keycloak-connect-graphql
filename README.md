@@ -17,9 +17,9 @@ Based on the [keycloak-connect](https://github.com/keycloak/keycloak-nodejs-conn
 
 🔑  Access to token/user information in resolver context via `context.kauth` (for regular resolvers and subscriptions)
 
-📝  Declarative `@auth` and `@hasRole` directives that can be applied directly in your Schema.
+📝  Declarative `@auth`, `@hasRole` and `@hasPermission` directives that can be applied directly in your Schema.
 
-⚙️  `auth` and `hasRole` middleware resolver functions that can be used directly in code. (Alternative to directives)
+⚙️  `auth`, `hasRole` and `hasPermission` middleware resolver functions that can be used directly in code. (Alternative to directives)
 
 ## Getting Started
 
@@ -81,7 +81,7 @@ In this example `keycloak.middleware()` is used on the GraphQL endpoint. This al
 
 ## Using @auth and @hasRole directives (Apollo Server only)
 
-In Apollo Server, the `@auth` and `@hasRole` directives can be used directly on the schema.
+In Apollo Server, the `@auth`, `@hasRole` and `@hasPermission` directives can be used directly on the schema.
 This declarative approach means auth logic is never mixed with business logic.
 
 ```js
