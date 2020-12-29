@@ -116,3 +116,21 @@ export const hasRole = (roles: Array<string>) => (next: Function) => (...params:
 
   return next.apply( null, params )
 }
+
+
+export const hasPermission = (permissions: Array<string>) => (next: Function) => async (...params: any[]) => {
+  let context = params[2]
+  if (!context[CONTEXT_KEY] || !context[CONTEXT_KEY].isAuthenticated()) {
+    const error: any = new Error(`User not Authenticated`);
+    error.code = "UNAUTHENTICATED"
+    throw error
+  }
+
+  if (!await context.kauth.hasPermission(permissions)) {
+    const error: any = new Error(`User is not authorized. Must have of the following permissions: [${permissions}]`);
+    error.code = "FORBIDDEN"
+    throw error
+  }
+
+  return next.apply( null, params )
+}
