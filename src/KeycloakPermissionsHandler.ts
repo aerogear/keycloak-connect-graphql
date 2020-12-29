@@ -8,7 +8,7 @@ export interface AuthorizationConfiguration {
 }
 
 interface PermissionsToken extends Token {
-    hasPermissions(resource: string, scope: string | undefined): boolean
+    hasPermission(resource: string, scope: string | undefined): boolean
 }
 
 export class KeycloakPermissionsHandler {
@@ -49,7 +49,7 @@ export class KeycloakPermissionsHandler {
 
         if (this.permissionsToken) {
             if (this.handlePermissions(expectedPermissions, (resource, scope) => {
-                if (this.permissionsToken?.hasPermissions(resource, scope)) {
+                if (this.permissionsToken?.hasPermission(resource, scope)) {
                     return true
                 }
                 return false
