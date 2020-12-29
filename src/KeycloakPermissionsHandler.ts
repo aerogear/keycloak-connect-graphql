@@ -1,5 +1,5 @@
 import { Keycloak, Token, AuthZRequest } from 'keycloak-connect'
-import { GrantedRequest } from './KeycloakContext';
+import { GrantedRequest } from './KeycloakContext'
 
 export interface AuthorizationConfiguration {
     resource_server_id: string,
@@ -8,139 +8,139 @@ export interface AuthorizationConfiguration {
 }
 
 interface PermissionsToken extends Token {
-    hasPermissions(resource: string, scope: string | undefined): boolean;
+    hasPermissions(resource: string, scope: string | undefined): boolean
 }
 
 export class KeycloakPermissionsHandler {
-    private permissionsToken: PermissionsToken | undefined;
+    private permissionsToken: PermissionsToken | undefined
     constructor(private keycloak: Keycloak, private req: GrantedRequest, private config: AuthorizationConfiguration) {
-        this.permissionsToken = this.req.kauth.grant?.access_token as PermissionsToken;
+        this.permissionsToken = this.req.kauth.grant?.access_token as PermissionsToken
     }
 
     handlePermissions(permissions: string[] | string, handler: (r: string, s: string | undefined ) => boolean) {
-        if (typeof permissions === "string") {
-            permissions = [permissions];
+        if (typeof permissions === 'string') {
+            permissions = [permissions]
         }
 
         for (let i = 0; i < permissions.length; i++) {
-            const expected = permissions[i].split(':');
-            const resource = expected[0];
-            let scope: string | undefined = undefined;
+            const expected = permissions[i].split(':')
+            const resource = expected[0]
+            let scope: string | undefined = undefined
 
             if (expected.length > 1) {
-                scope = expected[1];
+                scope = expected[1]
             }
 
             if (!handler(resource, scope)) {
-                return false;
+                return false
             }
         }
 
-        return true;
+        return true
     }
 
     async checkPermissions(expectedPermissions: string | string[]): Promise<boolean> {
-        if (typeof expectedPermissions === "string") {
-            expectedPermissions = [expectedPermissions];
+        if (typeof expectedPermissions === 'string') {
+            expectedPermissions = [expectedPermissions]
         }
         if (!expectedPermissions || expectedPermissions.length === 0) {
-            return true;
+            return true
         }
 
         if (this.permissionsToken) {
             if (this.handlePermissions(expectedPermissions, (resource, scope) => {
                 if (this.permissionsToken?.hasPermissions(resource, scope)) {
-                    return true;
+                    return true
                 }
-                return false;
+                return false
             })) {
-                return true;
+                return true
             }
         }
 
          let authzRequest: AuthZRequest = {
              audience: this.config.resource_server_id,
-             response_mode: this.config.response_mode ?? "permissions",
+             response_mode: this.config.response_mode ?? 'permissions',
              permissions: new Array<{ id: string, scopes: string[] }>(),
-         };
+         }
 
         this.handlePermissions(expectedPermissions, (resource, scope) => {
-            const permissions = { id: resource, scopes: new Array<string>() };
+            const permissions = { id: resource, scopes: new Array<string>() }
             if (scope) {
-                permissions.scopes = [scope];
+                permissions.scopes = [scope]
             }
 
-            authzRequest["permissions"].push(permissions);
+            authzRequest['permissions'].push(permissions)
 
             // instead of void
-            return false;
-        });
+            return false
+        })
         
         if (this.config.claims) {
-            const claims = this.config.claims(this.req);
+            const claims = this.config.claims(this.req)
 
             if (claims) {
-                authzRequest.claim_token = Buffer.from(JSON.stringify(claims)).toString("base64");
-                authzRequest.claim_token_format = "urn:ietf:params:oauth:token-type:jwt";
+                authzRequest.claim_token = Buffer.from(JSON.stringify(claims)).toString('base64')
+                authzRequest.claim_token_format = 'urn:ietf:params:oauth:token-type:jwt'
             }
         }
 
-        if (this.config.response_mode === "permissions") {
+        if (this.config.response_mode === 'permissions') {
             try {
                 await this.keycloak.checkPermissions(authzRequest, this.req, (permissions: any) => {
                     if (this.handlePermissions(expectedPermissions, (resource: string, scope: string | undefined) => {
                         if (!permissions || permissions.length === 0) {
-                            return false;
+                            return false
                         }
 
                         for (let j = 0; j < permissions.length; j++) {
-                            let permission = permissions[j];
+                            let permission = permissions[j]
                             
                             if (permission.rsid === resource || permission.rsname === resource) {
                                 if (scope) {
                                     if (permission.scopes && permission.scopes.length > 0) {
                                         if (!permission.scopes.includes(scope)) {
-                                            return false;
+                                            return false
                                         }
-                                        break;
+                                        break
                                     }
-                                    return false;
+                                    return false
                                 }
                             }
                         }
-                        return true;
+                        return true
                     })) {
-                        return true;
+                        return true
                     }
 
-                    return false;
-                });
+                    return false
+                })
 
-                return true;
+                return true
             } catch {
-                return false;
+                return false
             }
         }
 
-        if (this.config.response_mode === "token") {
+        if (this.config.response_mode === 'token') {
             try {
-                authzRequest.response_mode = undefined;
+                authzRequest.response_mode = undefined
                 await this.keycloak.checkPermissions(authzRequest, this.req).then((grant: any) => {
                     if (this.handlePermissions(expectedPermissions, (r, s) => {
                         if (!grant.access_token.hasPermission(r, s)) {
-                            return false;
+                            return false
                         }
-                        return true;
+                        return true
                     })) {
-                        return true;
+                        return true
                     }
-                });
-                return true;
+                })
+                return true
             } catch {
-                return false;
+                return false
             }
         }
 
-        return false;
+        return false
     }
 }
