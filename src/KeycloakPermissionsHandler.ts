@@ -17,7 +17,7 @@ export class KeycloakPermissionsHandler {
         this.permissionsToken = this.req.kauth.grant?.access_token as PermissionsToken
     }
 
-    handlePermissions(permissions: string[] | string, handler: (r: string, s: string | undefined ) => boolean) {
+    private handlePermissions(permissions: string[] | string, handler: (r: string, s: string | undefined ) => boolean) {
         if (typeof permissions === 'string') {
             permissions = [permissions]
         }
@@ -39,7 +39,7 @@ export class KeycloakPermissionsHandler {
         return true
     }
 
-    async checkPermissions(expectedPermissions: string | string[]): Promise<boolean> {
+    async hasPermission(expectedPermissions: string | string[]): Promise<boolean> {
         if (typeof expectedPermissions === 'string') {
             expectedPermissions = [expectedPermissions]
         }
@@ -72,8 +72,7 @@ export class KeycloakPermissionsHandler {
 
             authzRequest['permissions'].push(permissions)
 
-            // instead of void
-            return false
+            return true
         })
         
         if (this.config.claims) {

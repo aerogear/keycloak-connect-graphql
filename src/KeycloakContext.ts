@@ -85,6 +85,14 @@ export class KeycloakContext extends KeycloakContextBase implements AuthContextP
       this.permissionsHandler = new KeycloakPermissionsHandler(keycloak, req, authorizationConfiguration)
     }
   }
+
+  async hasPermission(expectedPermissions: string | string[]): Promise<boolean> {
+    if (!this.permissionsHandler) {
+      return false
+    }
+
+    return await this.permissionsHandler.hasPermission(expectedPermissions);
+  }
 }
 
 /**
