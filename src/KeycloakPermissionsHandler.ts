@@ -43,13 +43,14 @@ export class KeycloakPermissionsHandler {
         if (typeof expectedPermissions === 'string') {
             expectedPermissions = [expectedPermissions]
         }
+
         if (!expectedPermissions || expectedPermissions.length === 0) {
             return true
         }
 
         if (this.permissionsToken) {
             if (this.handlePermissions(expectedPermissions, (resource, scope) => {
-                if (this.permissionsToken?.hasPermission(resource, scope)) {
+                if (this.permissionsToken && this.permissionsToken.hasPermission(resource, scope)) {
                     return true
                 }
                 return false
@@ -60,7 +61,7 @@ export class KeycloakPermissionsHandler {
 
          let authzRequest: AuthZRequest = {
              audience: this.config.resource_server_id,
-             response_mode: this.config.response_mode ?? 'permissions',
+             response_mode: this.config.response_mode,
              permissions: new Array<{ id: string, scopes: string[] }>(),
          }
 
@@ -74,7 +75,7 @@ export class KeycloakPermissionsHandler {
 
             return true
         })
-        
+
         if (this.config.claims) {
             const claims = this.config.claims(this.req)
 
@@ -84,7 +85,7 @@ export class KeycloakPermissionsHandler {
             }
         }
 
-        if (this.config.response_mode === 'permissions') {
+        if (!this.config.response_mode || this.config.response_mode === 'permissions') {
             try {
                 await this.keycloak.checkPermissions(authzRequest, this.req, (permissions: any) => {
                     if (this.handlePermissions(expectedPermissions, (resource: string, scope: string | undefined) => {

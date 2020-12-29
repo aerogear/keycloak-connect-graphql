@@ -30,23 +30,30 @@ const typeDefs = gql`
 
   type Mutation {
     publishArticle(title: String!, content: String!): Article! @hasPermission(resources: ["Article:publish"])
-    unpublishArticle(title: String!): Article! @hasPermission(resources: ["Article:publish","Article:delete"])
+    unpublishArticle(title: String!):Boolean @hasPermission(resources: ["Article:publish","Article:delete"])
+    deleteArticle(title: String!):Boolean @hasPermission(resources: ["Article:delete"])
   }
 `
 
 const resolvers = {
-    Query: {
-        listArticles: (obj, args, context, info) => {
-            return [{ id: 1, title: 'About authorization', content: 'A short text about authorization.' },
-            { id: 2, title: 'About authentication', content: 'A short text about authentication.' },
-            { id: 3, title: 'GraphQL', conent: 'A short text about GraphQL' }]
-        }
+  Query: {
+    listArticles: (obj, args, context, info) => {
+      return [{ id: 1, title: 'About authorization', content: 'A short text about authorization.' },
+        { id: 2, title: 'About authentication', content: 'A short text about authentication.' },
+        { id: 3, title: 'GraphQL', content: 'A short text about GraphQL' }]
+    }
+  },
+  Mutation: {
+    publishArticle: (object, args, context, info) => {
+      const user = context.kauth.accessToken.content
+      return { id: Math.floor(Math.random() * 100) + 10, title: args.title, content: args.content }
     },
-    Mutation: {
-        publishArticle: (object, args, context, info) => {
-            const user = context.kauth.accessToken.content
-            return { id: Math.floor(Math.random() * 100) + 10, title: args.title, content: args.content }
-        }
+    unpublishArticle: () => {
+      return true
+    },
+    deleteArticle: () => {
+      return true
+    }
   }
 }
 
