@@ -14,7 +14,7 @@ interface PermissionsToken extends Token {
 export class KeycloakPermissionsHandler {
     private permissionsToken: PermissionsToken | undefined
     constructor(private keycloak: Keycloak, private req: GrantedRequest, private config: AuthorizationConfiguration) {
-        this.permissionsToken = this.req.kauth.grant?.access_token as PermissionsToken
+        this.permissionsToken = this.req?.kauth?.grant?.access_token as PermissionsToken
     }
 
     private handlePermissions(permissions: string[] | string, handler: (r: string, s: string | undefined ) => boolean) {
@@ -44,7 +44,7 @@ export class KeycloakPermissionsHandler {
             expectedPermissions = [expectedPermissions]
         }
 
-        if (!expectedPermissions || expectedPermissions.length === 0) {
+        if (expectedPermissions.length === 0) {
             return true
         }
 
