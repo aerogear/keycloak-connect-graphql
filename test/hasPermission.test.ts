@@ -151,7 +151,7 @@ test('hasPermission works on fields that have no resolvers. context.auth.hasPerm
     await field.resolve(root, args, context, info)
 })
 
-test('visitFieldDefinition accepts an array of roles', async (t) => {
+test('visitFieldDefinition accepts an array of permissions', async (t) => {
     t.plan(2)
     const directiveArgs = {
         resources: ['Article:view', 'Article:write', 'Article:delete']
@@ -349,3 +349,85 @@ test('if token does not have the required permission, then an error is returned 
     }, `User is not authorized. Must have of the following permissions: [${directiveArgs.resources}]`)
 })
 
+test('hasPermission does not allow unkown arguments, visitFieldDefinition will throw', async (t) => {
+    const directiveArgs = {
+        resources: 'Article:view',
+        some: 'unknown arg'
+    }
+
+    const directive = createHasPermissionDirective(directiveArgs)
+
+    const field = {
+        resolve: (root: any, args: any, context: any, info: any) => {
+            return new Promise((resolve, reject) => {
+                t.fail('the original resolver should never be called')
+            })
+        },
+        name: 'testField'
+    }
+
+    t.throws(() => {
+        directive.visitFieldDefinition(field)
+    })
+})
+
+test('hasPermission does not allow a non string value for resources, visitFieldDefinition will throw', async (t) => {
+    const directiveArgs = {
+        resources: 123
+    }
+
+    const directive = createHasPermissionDirective(directiveArgs)
+
+    const field = {
+        resolve: (root: any, args: any, context: any, info: any) => {
+            return new Promise((resolve, reject) => {
+                t.fail('the original resolver should never be called')
+            })
+        },
+        name: 'testField'
+    }
+
+    t.throws(() => {
+        directive.visitFieldDefinition(field)
+    })
+})
+
+test('hasPermission must contain resources arg, visitFieldDefinition will throw', async (t) => {
+    const directiveArgs = {}
+
+    const directive = createHasPermissionDirective(directiveArgs)
+
+    const field = {
+        resolve: (root: any, args: any, context: any, info: any) => {
+            return new Promise((resolve, reject) => {
+                t.fail('the original resolver should never be called')
+            })
+        },
+        name: 'testField'
+    }
+
+    t.throws(() => {
+        directive.visitFieldDefinition(field)
+    })
+})
+
+test('hasPermission resources arg can be an array, visitFieldDefinition will not throw', async (t) => {
+    const directiveArgs = {
+        resources: ['Article:view', 'Blog']
+    }
+
+    const directive = createHasPermissionDirective(directiveArgs)
+    
+    const field = {
+        resolve: (root: any, args: any, context: any, info: any) => {
+            return new Promise((resolve, reject) => {
+                t.fail('the original resolver should never be called')
+            })
+        },
+        name: 'testField'
+    }
+
+    t.notThrows(() => {
+        directive.visitFieldDefinition(field)
+    })
+})
