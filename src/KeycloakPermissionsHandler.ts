@@ -3,7 +3,6 @@ import { GrantedRequest } from './KeycloakContext'
 
 export interface AuthorizationConfiguration {
     resource_server_id: string,
-    response_mode: string,
     claims: (request: GrantedRequest)=>any
 }
 
@@ -64,7 +63,6 @@ export class KeycloakPermissionsHandler {
 
          let authzRequest: AuthZRequest = {
              audience: this.config.resource_server_id,
-             response_mode: this.config.response_mode,
              permissions: new Array<{ id: string, scopes: string[] }>(),
          }
 
@@ -88,62 +86,22 @@ export class KeycloakPermissionsHandler {
             }
         }
 
-        if (!this.config.response_mode || this.config.response_mode === 'permissions') {
-            try {
-                await this.keycloak.checkPermissions(authzRequest, this.req, (permissions: any) => {
-                    if (this.handlePermissions(expectedPermissions, (resource: string, scope: string | undefined) => {
-                        if (!permissions || permissions.length === 0) {
-                            return false
-                        }
-
-                        for (let j = 0; j < permissions.length; j++) {
-                            let permission = permissions[j]
-                            
-                            if (permission.rsid === resource || permission.rsname === resource) {
-                                if (scope) {
-                                    if (permission.scopes && permission.scopes.length > 0) {
-                                        if (!permission.scopes.includes(scope)) {
-                                            return false
-                                        }
-                                        break
-                                    }
-                                    return false
-                                }
-                            }
-                        }
-                        return true
-                    })) {
-                        return true
-                    }
-
+        try {
+            authzRequest.response_mode = undefined
+            const grant = await this.keycloak.checkPermissions(authzRequest, this.req)
+            const token = grant.access_token as PermissionsToken;
+            if (token && this.handlePermissions(expectedPermissions, (resource, scope) => {
+                if (!token.hasPermission(resource, scope)) {
                     return false
-                })
-
+                }
                 return true
-            } catch {
-                return false
-            }
-        }
-
-        if (this.config.response_mode === 'token') {
-            try {
-                authzRequest.response_mode = undefined
-                await this.keycloak.checkPermissions(authzRequest, this.req).then((grant: any) => {
-                    if (this.handlePermissions(expectedPermissions, (r, s) => {
-                        if (!grant.access_token.hasPermission(r, s)) {
-                            return false
-                        }
-                        return true
-                    })) {
-                        return true
-                    }
-                })
+            })) {
                 return true
-            } catch {
-                return false
             }
-        }
 
-        return false
+            return false
+        } catch {
+            return false
+        }
     }
 }

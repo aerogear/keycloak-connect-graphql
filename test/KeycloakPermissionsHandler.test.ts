@@ -57,7 +57,27 @@ test('KeycloakPermissionsHandler returns true when resources is an empty array',
     t.deepEqual(await handler.hasPermission([]), true)
 })
 
-test('KeycloakPermissionsHandler returns true when expected resource and scope were found', async (t) => {
+test('KeycloakPermissionsHandler returns true when expected resource and scope were matched', async (t) => {
+    const keycloak = {} as Keycloak.Keycloak
+    const req = {
+        kauth: {
+            grant: {
+                access_token: {
+                    hasPermission: (r: string, s: string | undefined): boolean =>
+                    {
+                        return r === 'Article' && s === 'view'
+                    }
+                }
+            }
+        }
+    } as unknown as GrantedRequest
+    const config = {} as AuthorizationConfiguration
+
+    const handler = new KeycloakPermissionsHandler(keycloak, req ,  config)
+    t.deepEqual(await handler.hasPermission('Article:view'), true)
+})
+
+test('KeycloakPermissionsHandler returns true when expected resource and scope were found in array', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
     const req = {
         kauth: {
@@ -158,67 +178,20 @@ test('KeycloakPermissionsHandler returns true when at all resource and scope wer
     t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), true)
 })
 
-test('KeycloakPermissionsHandler returns true when response_mode is undefined and keycloak.checkPermissions resolves grant', async (t) => {
-    const keycloak = {
-        checkPermissions(authzRequest: AuthZRequest, request: express.Request, callback?: (json: any) => any): Promise<Grant> {
-            const result = {} as Grant
-            return new Promise<Grant>((resolve, reject) => resolve(result))
-        }
-    } as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-                access_token: {
-                    hasPermission: (r: string, s: string | undefined): boolean =>
-                    {
-                        return false
-                    }
-                }
-            }
-        }
-    } as unknown as GrantedRequest
-    const config = {
-    } as AuthorizationConfiguration
-
-    const handler = new KeycloakPermissionsHandler(keycloak, req ,  config)
-    t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), true)
-})
-
-test('KeycloakPermissionsHandler returns false when response_mode is undefined and keycloak.checkPermissions rejects grant', async (t) => {
-    const keycloak = {
-        checkPermissions(authzRequest: AuthZRequest, request: express.Request, callback?: (json: any) => any): Promise<Grant> {
-            const result = {} as Grant
-            return new Promise<Grant>((resolve, reject) => reject(result))
-        }
-    } as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-                access_token: {
-                    hasPermission: (r: string, s: string | undefined): boolean =>
-                    {
-                        return false
-                    }
-                }
-            }
-        }
-    } as unknown as GrantedRequest
-    const config = {
-    } as AuthorizationConfiguration
-
-    const handler = new KeycloakPermissionsHandler(keycloak, req ,  config)
-    t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), false)
-})
-
 test('KeycloakPermissionsHandler uses claims defined in configuration when it asks keycloak to checkPermissions', async (t) => {
     const keycloak = {
         checkPermissions(authzRequest: AuthZRequest, request: express.Request, callback?: (json: any) => any): Promise<Grant> {
             return new Promise<Grant>((resolve, reject) => {
                 const actual = JSON.parse(Buffer.from(authzRequest.claim_token!, 'base64').toString())
-                console.log(JSON.stringify(actual))
                 const hasAllClaims = actual['claim1'] === 'claim1' && actual['claim2'] === 'claim2'
-    
-                const result = {} as Grant
+
+                const result = {
+                    access_token: {
+                        hasPermission: (r: string, s: string | undefined): boolean => {
+                            return true
+                        }
+                    }
+                } as unknown as Grant
                 hasAllClaims ? resolve(result) : reject(result)
             })
         }
@@ -227,8 +200,7 @@ test('KeycloakPermissionsHandler uses claims defined in configuration when it as
         kauth: {
             grant: {
                 access_token: {
-                    hasPermission: (r: string, s: string | undefined): boolean =>
-                    {
+                    hasPermission: (r: string, s: string | undefined): boolean => {
                         return false
                     }
                 }
@@ -247,4 +219,74 @@ test('KeycloakPermissionsHandler uses claims defined in configuration when it as
 
     const handler = new KeycloakPermissionsHandler(keycloak, req ,  config)
     t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), true)
+})
+
+
+test('KeycloakPermissionsHandler returns true when access token from authorization request returns true', async (t) => {
+    const keycloak = {
+        checkPermissions(authzRequest: AuthZRequest, request: express.Request, callback?: (json: any) => any): Promise<Grant> {
+            return new Promise<Grant>((resolve, reject) => {
+                const result = {
+                    access_token: {
+                        hasPermission: (r: string, s: string | undefined): boolean => {
+                            return true
+                        }
+                    }
+                } as unknown as Grant
+                return resolve(result)
+            })
+        }
+    } as Keycloak.Keycloak
+    const req = {
+        kauth: {
+            grant: {
+                access_token: {
+                    hasPermission: (r: string, s: string | undefined): boolean => {
+                        return false
+                    }
+                }
+            }
+        }
+    } as unknown as GrantedRequest
+    const config = {
+        resource_server_id: 'resource-server'
+    } as AuthorizationConfiguration
+
+    const handler = new KeycloakPermissionsHandler(keycloak, req, config)
+    t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), true)
+})
+
+
+test('KeycloakPermissionsHandler returns false when access token from authorization request returns false', async (t) => {
+    const keycloak = {
+        checkPermissions(authzRequest: AuthZRequest, request: express.Request, callback?: (json: any) => any): Promise<Grant> {
+            return new Promise<Grant>((resolve, reject) => {
+                const result = {
+                    access_token: {
+                        hasPermission: (r: string, s: string | undefined): boolean => {
+                            return false
+                        }
+                    }
+                } as unknown as Grant
+                return resolve(result)
+            })
+        }
+    } as Keycloak.Keycloak
+    const req = {
+        kauth: {
+            grant: {
+                access_token: {
+                    hasPermission: (r: string, s: string | undefined): boolean => {
+                        return false
+                    }
+                }
+            }
+        }
+    } as unknown as GrantedRequest
+    const config = {
+        resource_server_id: 'resource-server'
+    } as AuthorizationConfiguration
+
+    const handler = new KeycloakPermissionsHandler(keycloak, req, config)
+    t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), false)
 })
