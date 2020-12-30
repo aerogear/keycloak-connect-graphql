@@ -5,7 +5,7 @@ import * as express from 'express'
 
 import { AuthorizationConfiguration, KeycloakPermissionsHandler } from '../src/KeycloakPermissionsHandler'
 
-test('KeycloakPermissionsHandler returns false when there is no kauth', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions returns false when there is no kauth', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
     const req = {
     } as GrantedRequest
@@ -15,7 +15,7 @@ test('KeycloakPermissionsHandler returns false when there is no kauth', async (t
     t.deepEqual(await handler.hasPermission('Article:view'), false)
 })
 
-test('KeycloakPermissionsHandler returns false when there is no kauth.grant', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions returns false when there is no kauth.grant', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
     const req = {
         kauth: {
@@ -27,7 +27,7 @@ test('KeycloakPermissionsHandler returns false when there is no kauth.grant', as
     t.deepEqual(await handler.hasPermission('Article:view'), false)
 })
 
-test('KeycloakPermissionsHandler returns false when there is no kauth.grant.access_token', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions returns false when there is no kauth.grant.access_token', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
     const req = {
         kauth: {
@@ -41,7 +41,7 @@ test('KeycloakPermissionsHandler returns false when there is no kauth.grant.acce
     t.deepEqual(await handler.hasPermission('Article:view'), false)
 })
 
-test('KeycloakPermissionsHandler returns true when resources is an empty array', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions returns true when resources is an empty array', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
     const req = {
         kauth: {
@@ -57,7 +57,7 @@ test('KeycloakPermissionsHandler returns true when resources is an empty array',
     t.deepEqual(await handler.hasPermission([]), true)
 })
 
-test('KeycloakPermissionsHandler returns true when expected resource and scope were matched', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions returns true when expected resource and scope were matched', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
     const req = {
         kauth: {
@@ -77,7 +77,7 @@ test('KeycloakPermissionsHandler returns true when expected resource and scope w
     t.deepEqual(await handler.hasPermission('Article:view'), true)
 })
 
-test('KeycloakPermissionsHandler returns true when expected resource and scope were found in array', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions returns true when expected resource and scope were found in array', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
     const req = {
         kauth: {
@@ -97,7 +97,7 @@ test('KeycloakPermissionsHandler returns true when expected resource and scope w
     t.deepEqual(await handler.hasPermission(['Article:view']), true)
 })
 
-test('KeycloakPermissionsHandler returns false when expected resource was not found', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions returns false when expected resource was not found', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
     const req = {
         kauth: {
@@ -118,7 +118,7 @@ test('KeycloakPermissionsHandler returns false when expected resource was not fo
 })
 
 
-test('KeycloakPermissionsHandler returns false when expected scope was not found', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions returns false when expected scope was not found', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
     const req = {
         kauth: {
@@ -138,7 +138,7 @@ test('KeycloakPermissionsHandler returns false when expected scope was not found
     t.deepEqual(await handler.hasPermission(['Article:view1']), false)
 })
 
-test('KeycloakPermissionsHandler returns false when at least one resource and scope were not found', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions returns false when at least one resource and scope were not found', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
     const req = {
         kauth: {
@@ -158,7 +158,7 @@ test('KeycloakPermissionsHandler returns false when at least one resource and sc
     t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), false)
 })
 
-test('KeycloakPermissionsHandler returns true when at all resource and scope were found', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions returns true when at all resource and scope were found', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
     const req = {
         kauth: {
@@ -178,7 +178,7 @@ test('KeycloakPermissionsHandler returns true when at all resource and scope wer
     t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), true)
 })
 
-test('KeycloakPermissionsHandler uses claims defined in configuration when it asks keycloak to checkPermissions', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions uses claims defined in configuration when it asks keycloak to checkPermissions', async (t) => {
     const keycloak = {
         checkPermissions(authzRequest: AuthZRequest, request: express.Request, callback?: (json: any) => any): Promise<Grant> {
             return new Promise<Grant>((resolve, reject) => {
@@ -222,7 +222,7 @@ test('KeycloakPermissionsHandler uses claims defined in configuration when it as
 })
 
 
-test('KeycloakPermissionsHandler returns true when access token from authorization request returns true', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions returns true when access token from authorization request returns true', async (t) => {
     const keycloak = {
         checkPermissions(authzRequest: AuthZRequest, request: express.Request, callback?: (json: any) => any): Promise<Grant> {
             return new Promise<Grant>((resolve, reject) => {
@@ -257,7 +257,7 @@ test('KeycloakPermissionsHandler returns true when access token from authorizati
 })
 
 
-test('KeycloakPermissionsHandler returns false when access token from authorization request returns false', async (t) => {
+test('KeycloakPermissionsHandler.hasPermissions returns false when access token from authorization request returns false', async (t) => {
     const keycloak = {
         checkPermissions(authzRequest: AuthZRequest, request: express.Request, callback?: (json: any) => any): Promise<Grant> {
             return new Promise<Grant>((resolve, reject) => {
