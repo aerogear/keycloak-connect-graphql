@@ -1,6 +1,12 @@
 import { Keycloak, Token, AuthZRequest } from 'keycloak-connect'
 import { GrantedRequest } from './KeycloakContext'
 
+/**
+ * Provides hasPermission function to check if user has requested permissions.
+ * 
+ * Requests uma-ticket, retrieves user's permissions and checks if permissions satify requested permissions.
+ */
+
 export interface AuthorizationConfiguration {
     resource_server_id: string,
     claims: (request: GrantedRequest)=>any
