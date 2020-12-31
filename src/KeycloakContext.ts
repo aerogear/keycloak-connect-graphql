@@ -71,6 +71,25 @@ export class KeycloakContextBase implements AuthContextProvider {
  * Note: This class gets the token details from `req.kauth` so you must ensure that the keycloak middleware
  * is installed on the graphql endpoint
  * 
+ * In order to use hasPermission function keycloak and optionally authorizationConfiguration parameters are needed:
+ * 
+ * ```javascript
+ * 
+ * // perform the standard keycloak-connect middleware setup on our app
+ * const { keycloak } = configureKeycloak(app, graphqlPath)
+ * 
+ * const server = new ApolloServer({
+ *   typeDefs,
+ *   resolvers,
+ *   context: ({ req }) => {
+ *     return {
+ *       kauth: new KeycloakContext({ req }, keycloak)
+ *       // your other things you want in your context
+ *     }
+ *   }
+ * })
+ * ```
+ * 
  */
 export class KeycloakContext extends KeycloakContextBase implements AuthContextProvider {
   private readonly permissionsHandler: KeycloakPermissionsHandler | undefined
@@ -81,10 +100,21 @@ export class KeycloakContext extends KeycloakContextBase implements AuthContextP
     const token = (req && req.kauth && req.kauth.grant) ? req.kauth.grant.access_token : undefined
     super(token)
     this.request = req
-    if (keycloak && authorizationConfiguration) {
+    if (keycloak) {
       this.permissionsHandler = new KeycloakPermissionsHandler(keycloak, req, authorizationConfiguration)
     }
   }
+
+/**
+ * 
+ * Checks that the authenticated keycloak user has permissions for requested resources.
+ * If the user has the requested permissions, the next resolver is called.
+ * If the user does not have the requested permissions, an error is thrown.
+ * 
+ * If an array of expected permissions is passed, it checks that the user has at all of the permissions
+ * 
+ * @param expectedPermissions the expected permission or array of permissions to check
+ */
 
   async hasPermission(expectedPermissions: string | string[]): Promise<boolean> {
     if (!this.permissionsHandler) {

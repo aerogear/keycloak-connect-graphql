@@ -4,12 +4,12 @@ import { GrantedRequest } from './KeycloakContext'
 /**
  * Provides hasPermission function to check if user has requested permissions.
  * 
- * Requests uma-ticket, retrieves user's permissions and checks if permissions satify requested permissions.
+ * Requests uma-ticket, retrieves user's permissions and checks if user has all requested permissions.
  */
 
 export interface AuthorizationConfiguration {
-    resource_server_id: string,
-    claims: (request: GrantedRequest)=>any
+    resource_server_id: string | undefined,
+    claims: ((request: GrantedRequest)=>any) | undefined
 }
 
 interface PermissionsToken extends Token {
@@ -18,7 +18,7 @@ interface PermissionsToken extends Token {
 
 export class KeycloakPermissionsHandler {
     private permissionsToken: PermissionsToken | undefined
-    constructor(private keycloak: Keycloak, private req: GrantedRequest, private config: AuthorizationConfiguration) {
+    constructor(private keycloak: Keycloak, private req: GrantedRequest, private config: AuthorizationConfiguration | undefined) {
         this.permissionsToken = this.req?.kauth?.grant?.access_token as PermissionsToken
     }
 
@@ -56,21 +56,21 @@ export class KeycloakPermissionsHandler {
             return true
         }
 
-        if (this.permissionsToken) {
-            if (this.handlePermissions(expectedPermissions, (resource, scope) => {
-                if (this.permissionsToken && this.permissionsToken.hasPermission(resource, scope)) {
-                    return true
-                }
-                return false
-            })) {
+        // try with cached permissions
+        if (this.handlePermissions(expectedPermissions, (resource, scope) => {
+            if (this.permissionsToken && this.permissionsToken.hasPermission(resource, scope)) {
                 return true
             }
+            return false
+        })) {
+            return true
         }
 
-         let authzRequest: AuthZRequest = {
-             audience: this.config.resource_server_id,
-             permissions: new Array<{ id: string, scopes: string[] }>(),
-         }
+        // make request
+        let authzRequest: AuthZRequest = {
+            audience: this.config?.resource_server_id ?? this.keycloak.getConfig().resource,
+            permissions: new Array<{ id: string, scopes: string[] }>(),
+        }
 
         this.handlePermissions(expectedPermissions, (resource, scope) => {
             const permissions = { id: resource, scopes: new Array<string>() }
@@ -83,7 +83,7 @@ export class KeycloakPermissionsHandler {
             return true
         })
 
-        if (this.config.claims) {
+        if (this.config?.claims) {
             const claims = this.config.claims(this.req)
 
             if (claims) {

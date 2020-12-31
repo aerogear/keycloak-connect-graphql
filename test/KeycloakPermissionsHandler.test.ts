@@ -1,5 +1,5 @@
 import test from 'ava'
-import Keycloak, { AuthZRequest, Grant } from 'keycloak-connect'
+import Keycloak, { AuthZRequest, Grant, KeycloakConfig } from 'keycloak-connect'
 import { GrantedRequest } from '../src/KeycloakContext'
 import * as express from 'express'
 
@@ -111,7 +111,9 @@ test('KeycloakPermissionsHandler.hasPermissions returns false when expected reso
             }
         }
     } as unknown as GrantedRequest
-    const config = {} as AuthorizationConfiguration
+    const config = {
+        resource_server_id: 'resource-server'
+    } as AuthorizationConfiguration
 
     const handler = new KeycloakPermissionsHandler(keycloak, req ,  config)
     t.deepEqual(await handler.hasPermission(['Article1:view']), false)
@@ -119,7 +121,13 @@ test('KeycloakPermissionsHandler.hasPermissions returns false when expected reso
 
 
 test('KeycloakPermissionsHandler.hasPermissions returns false when expected scope was not found', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
+    const keycloak = {
+        getConfig: (): KeycloakConfig => {
+            return {
+                resource: 'resource-server'
+            } as KeycloakConfig
+        }
+    } as Keycloak.Keycloak
     const req = {
         kauth: {
             grant: {
@@ -132,9 +140,8 @@ test('KeycloakPermissionsHandler.hasPermissions returns false when expected scop
             }
         }
     } as unknown as GrantedRequest
-    const config = {} as AuthorizationConfiguration
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req ,  config)
+    const handler = new KeycloakPermissionsHandler(keycloak, req, undefined)
     t.deepEqual(await handler.hasPermission(['Article:view1']), false)
 })
 
@@ -152,9 +159,12 @@ test('KeycloakPermissionsHandler.hasPermissions returns false when at least one 
             }
         }
     } as unknown as GrantedRequest
-    const config = {} as AuthorizationConfiguration
+    const config = {
+        resource_server_id: 'resource-server',
+        claims: ()=> undefined
+    } as AuthorizationConfiguration
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req ,  config)
+    const handler = new KeycloakPermissionsHandler(keycloak, req , config)
     t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), false)
 })
 
