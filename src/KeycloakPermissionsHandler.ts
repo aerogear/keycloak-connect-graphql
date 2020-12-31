@@ -8,7 +8,13 @@ import { GrantedRequest } from './KeycloakContext'
  */
 
 export interface AuthorizationConfiguration {
+    /**
+     * Resource server, if not defined 'resource' from Keycloak configuration is taken
+     */
     resource_server_id: string | undefined,
+    /**
+     * Additional claims for policy evaluation 
+     */
     claims: ((request: GrantedRequest)=>any) | undefined
 }
 

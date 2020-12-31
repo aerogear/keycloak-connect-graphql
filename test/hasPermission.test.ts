@@ -346,10 +346,10 @@ test('if token does not have the required permission, then an error is returned 
 
     await t.throwsAsync(async () => {
         await field.resolve(root, args, context, info)
-    }, `User is not authorized. Must have of the following permissions: [${directiveArgs.resources}]`)
+    }, `User is not authorized. Must have the following permissions: [${directiveArgs.resources}]`)
 })
 
-test('hasPermission does not allow unkown arguments, visitFieldDefinition will throw', async (t) => {
+test('hasPermission does not allow unknown arguments, visitFieldDefinition will throw', async (t) => {
     const directiveArgs = {
         resources: 'Article:view',
         some: 'unknown arg'
