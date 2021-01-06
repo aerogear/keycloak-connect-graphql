@@ -11,11 +11,16 @@ export interface GrantedRequest extends Request {
 export const CONTEXT_KEY = 'kauth'
 
 export class KeycloakContextBase implements AuthContextProvider {
+  private readonly permissionsHandler: KeycloakPermissionsHandler | undefined
+
   public readonly accessToken: Keycloak.Token | undefined
   public static contextKey = CONTEXT_KEY
 
-  constructor (token?: Keycloak.Token) {
+  constructor (token?: Keycloak.Token, keycloak: Keycloak.Keycloak | undefined = undefined, authorizationConfiguration: AuthorizationConfiguration | undefined = undefined) {
     this.accessToken = token
+    if (keycloak) {
+      this.permissionsHandler = new KeycloakPermissionsHandler(keycloak, token, authorizationConfiguration)
+    }
   }
 
   /**
@@ -46,6 +51,25 @@ export class KeycloakContextBase implements AuthContextProvider {
   public hasRole (role: string): boolean {
     //@ts-ignore
     return this.isAuthenticated() && this.accessToken.hasRole(role)
+  }
+
+  /**
+ * 
+ * Checks that the authenticated keycloak user has permissions for requested resources.
+ * If the user has the requested permissions, the next resolver is called.
+ * If the user does not have the requested permissions, an error is thrown.
+ * 
+ * If an array of expected permissions is passed, it checks that the user has at all of the permissions
+ * 
+ * @param expectedPermissions the expected permission or array of permissions to check
+ */
+  
+  async hasPermission(expectedPermissions: string | string[]): Promise<boolean> {
+    if (!this.permissionsHandler) {
+      return false
+    }
+
+    return await this.permissionsHandler.hasPermission(expectedPermissions);
   }
 }
 
@@ -92,36 +116,13 @@ export class KeycloakContextBase implements AuthContextProvider {
  * 
  */
 export class KeycloakContext extends KeycloakContextBase implements AuthContextProvider {
-  private readonly permissionsHandler: KeycloakPermissionsHandler | undefined
   public readonly request: GrantedRequest
   public readonly accessToken: Keycloak.Token | undefined
 
   constructor ({ req }: { req: GrantedRequest }, keycloak: Keycloak.Keycloak | undefined = undefined, authorizationConfiguration: AuthorizationConfiguration | undefined = undefined) {
     const token = (req && req.kauth && req.kauth.grant) ? req.kauth.grant.access_token : undefined
-    super(token)
+    super(token,keycloak, authorizationConfiguration)
     this.request = req
-    if (keycloak) {
-      this.permissionsHandler = new KeycloakPermissionsHandler(keycloak, req, authorizationConfiguration)
-    }
-  }
-
-/**
- * 
- * Checks that the authenticated keycloak user has permissions for requested resources.
- * If the user has the requested permissions, the next resolver is called.
- * If the user does not have the requested permissions, an error is thrown.
- * 
- * If an array of expected permissions is passed, it checks that the user has at all of the permissions
- * 
- * @param expectedPermissions the expected permission or array of permissions to check
- */
-
-  async hasPermission(expectedPermissions: string | string[]): Promise<boolean> {
-    if (!this.permissionsHandler) {
-      return false
-    }
-
-    return await this.permissionsHandler.hasPermission(expectedPermissions);
   }
 }
 
@@ -154,7 +155,7 @@ export class KeycloakSubscriptionContext extends KeycloakContextBase {
    * 
    * @param token a keycloak token object
    */
-  constructor(token: Keycloak.Token) {
-    super(token)
+  constructor(token: Keycloak.Token, keycloak: Keycloak.Keycloak | undefined = undefined, authorizationConfiguration: AuthorizationConfiguration | undefined = undefined) {
+    super(token, keycloak, authorizationConfiguration)
   }
 }
