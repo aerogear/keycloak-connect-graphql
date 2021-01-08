@@ -13,7 +13,6 @@ const {
   KeycloakSchemaDirectives,
   KeycloakSubscriptionHandler,
   auth,
-  hasRole,
   hasPermission
 } = require('../dist')
 
@@ -32,8 +31,8 @@ const pubsub = new PubSub()
 const TOPIC = 'HELLO'
 setInterval(() => {
   pubsub.publish(TOPIC, { 
-    testSubscription: `tesing... ${Date.now()}`,
-    testSubscriptionProtected: `tesing... ${Date.now()}`
+    testSubscription: `testing... ${Date.now()}`,
+    testSubscriptionProtected: `testing... ${Date.now()}`
   })
 }, 2000)
 

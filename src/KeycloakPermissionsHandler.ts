@@ -44,11 +44,12 @@ export class KeycloakPermissionsHandler {
     private handlePermissions(permissions: string[], handler: (r: string, s: string | undefined ) => boolean) {
         for (let i = 0; i < permissions.length; i++) {
             const expected = permissions[i].split(':')
-            const resource = expected[0]
+            let resource = expected[0]
             let scope: string | undefined = undefined
 
             if (expected.length > 1) {
-                scope = expected[1]
+                resource = expected.slice(0, expected.length - 1).join(':')
+                scope = expected[expected.length - 1]
             }
 
             if (!handler(resource, scope)) {

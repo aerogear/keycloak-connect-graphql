@@ -5,7 +5,11 @@ import * as express from 'express'
 import { AuthorizationConfiguration, KeycloakPermissionsHandler } from '../src/KeycloakPermissionsHandler'
 
 test('KeycloakPermissionsHandler.hasPermissions returns false when there is no token', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
+        }
+    } as unknown as Keycloak.Keycloak
     const token = undefined
     const config = {} as AuthorizationConfiguration
 
@@ -14,7 +18,11 @@ test('KeycloakPermissionsHandler.hasPermissions returns false when there is no t
 })
 
 test('KeycloakPermissionsHandler.hasPermissions returns true when resources is an empty array', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
+        }
+    } as unknown as Keycloak.Keycloak
     const token = {
     } as Token
     const config = {} as AuthorizationConfiguration
@@ -24,7 +32,11 @@ test('KeycloakPermissionsHandler.hasPermissions returns true when resources is a
 })
 
 test('KeycloakPermissionsHandler.hasPermissions returns true when expected resource and scope were matched', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
+        }
+    } as unknown as Keycloak.Keycloak
     const token = {
         hasPermission: (r: string, s: string | undefined): boolean =>
         {
@@ -38,7 +50,11 @@ test('KeycloakPermissionsHandler.hasPermissions returns true when expected resou
 })
 
 test('KeycloakPermissionsHandler.hasPermissions returns true when expected resource and scope were found in array', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
+        }
+    } as unknown as Keycloak.Keycloak
     const token = {
         hasPermission: (r: string, s: string | undefined): boolean =>
         {
@@ -102,8 +118,12 @@ test('KeycloakPermissionsHandler.hasPermissions returns false when at least one 
     t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), false)
 })
 
-test('KeycloakPermissionsHandler.hasPermissions returns true when at all resource and scope were found', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
+test('KeycloakPermissionsHandler.hasPermissions returns true when all resources and scopes were found', async (t) => {
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
+        }
+    } as unknown as Keycloak.Keycloak
     const token = {
         hasPermission: (r: string, s: string | undefined): boolean => {
             return r === 'Article' && (s === 'view' || s === 'delete')
@@ -113,6 +133,40 @@ test('KeycloakPermissionsHandler.hasPermissions returns true when at all resourc
 
     const handler = new KeycloakPermissionsHandler(keycloak, token,  config)
     t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), true)
+})
+
+test('KeycloakPermissionsHandler.hasPermissions returns true when resource without scopes found', async (t) => {
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
+        }
+    } as unknown as Keycloak.Keycloak
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean => {
+            return r === 'Article'
+        }
+    } as unknown as Token
+    const config = {} as AuthorizationConfiguration
+
+    const handler = new KeycloakPermissionsHandler(keycloak, token,  config)
+    t.deepEqual(await handler.hasPermission(['Article']), true)
+})
+
+test('KeycloakPermissionsHandler.hasPermissions returns true when resource name contains ":" and scope is found', async (t) => {
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
+        }
+    } as unknown as Keycloak.Keycloak
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean => {
+            return r === 'Article:123456' && s === 'read'
+        }
+    } as unknown as Token
+    const config = {} as AuthorizationConfiguration
+
+    const handler = new KeycloakPermissionsHandler(keycloak, token,  config)
+    t.deepEqual(await handler.hasPermission(['Article:123456:read']), true)
 })
 
 test('KeycloakPermissionsHandler.hasPermissions uses claims defined in configuration when it asks keycloak to checkPermissions', async (t) => {
