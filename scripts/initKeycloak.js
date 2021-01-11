@@ -5,6 +5,7 @@ const realmExport = require('../examples/config/realm-export.json')
 // The public and bearer clients that will be set up
 const PUBLIC_CLIENT_NAME = `${realmExport.realm}-public`
 const BEARER_CLIENT_NAME = `${realmExport.realm}-bearer`
+const RESOURCE_SERVER_NAME = `${realmExport.realm}-resource-server`
 
 // The client roles you want created for the bearer and public clients
 const clientRoleNames = [
@@ -62,11 +63,12 @@ async function initKeycloak() {
   })
 
   const clients = await kc.clients.find()
-
+ 
   const bearerClient = clients.find(c => c.clientId === BEARER_CLIENT_NAME)
   const publicClient = clients.find(c => c.clientId === PUBLIC_CLIENT_NAME)
 
   const ourClients = [bearerClient, publicClient]
+  const resourceServer = clients.find(c => c.clientId === RESOURCE_SERVER_NAME)
 
   for (let realmRole of realmRoleNames) {
     console.log(`creating role ${realmRole}`)
@@ -152,6 +154,55 @@ async function initKeycloak() {
           ]
         })
       }
+    }
+  }
+
+  // creating policy for realm roles
+  let policies = {}
+  for (let realmRole of realmRoleNames) {
+    const roleFromKc = await kc.roles.findOneByName({ name: realmRole, realm: `${realmExport.realm}` })
+
+    const policyName = `realm-${roleFromKc.name}s policy`
+
+    console.log(`creating policy: ${policyName}`)
+    let policy = await kc.clients.createPolicy({
+      id: resourceServer.id,
+      type: 'role'
+    }, {
+      logic: 'POSITIVE',
+      decisionStrategy: 'UNANIMOUS',
+      name: policyName,
+      description: policyName,
+      roles: [{
+        id: roleFromKc.id
+      }
+      ]
+    })
+    policies[realmRole] = policy
+  }
+
+  // creating permissions
+
+  // listResources is still not released, once it's in the official npm
+  // const articleResource = kc.clients.listResources()[0]
+
+  // TODO: replace this constant with result from listResource
+  const articleResourceId = '642e8197-8885-420d-ac2b-2573e6142876'
+  const roleScopes = { admin: ['delete', 'publish', 'view', 'write'], developer: ['publish', 'view', 'write'] }
+
+  for (let role in roleScopes) {
+    for (let authorizationScope of roleScopes[role]) {
+      console.log(`creating permission for role realm-${role} on resource Article and scope ${authorizationScope}`)
+      await kc.clients.createPermission({
+        id: resourceServer.id,
+        name: `realm-${role} ${authorizationScope} article`,
+        type: 'resource',
+        logic: 'POSITIVE',
+        decisionStrategy: 'UNANIMOUS',
+        resources: [articleResourceId],
+        scopes: [authorizationScope],
+        policies: [policies[`${role}`].id]
+      })
     }
   }
 }
