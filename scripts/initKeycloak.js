@@ -175,8 +175,7 @@ async function initKeycloak() {
       description: policyName,
       roles: [{
         id: roleFromKc.id
-      }
-      ]
+      }]
     })
     policies[realmRole] = policy
   }
@@ -188,22 +187,26 @@ async function initKeycloak() {
 
   // TODO: replace this constant with result from listResource
   const articleResourceId = '642e8197-8885-420d-ac2b-2573e6142876'
-  const roleScopes = { admin: ['delete', 'publish', 'view', 'write'], developer: ['publish', 'view', 'write'] }
+  const scopesWithRoles = { 
+    delete: ['admin'],
+    publish: ['admin', 'developer'],
+    view: ['admin', 'developer'],
+    write: ['admin', 'developer'],
+  }
 
-  for (let role in roleScopes) {
-    for (let authorizationScope of roleScopes[role]) {
-      console.log(`creating permission for role realm-${role} on resource Article and scope ${authorizationScope}`)
-      await kc.clients.createPermission({
-        id: resourceServer.id,
-        name: `realm-${role} ${authorizationScope} article`,
-        type: 'resource',
-        logic: 'POSITIVE',
-        decisionStrategy: 'UNANIMOUS',
-        resources: [articleResourceId],
-        scopes: [authorizationScope],
-        policies: [policies[`${role}`].id]
-      })
-    }
+  for (let authorizationScope in scopesWithRoles) {
+    console.log(`creating permission on resource Article and scope ${authorizationScope}`)
+    const policyIds = scopesWithRoles[authorizationScope].map(r => policies[r].id)
+    await kc.clients.createPermission({
+      id: resourceServer.id,
+      name: `${authorizationScope} article`,
+      type: 'scope',
+      logic: 'POSITIVE',
+      decisionStrategy: 'AFFIRMATIVE',
+      resources: [articleResourceId],
+      scopes: [authorizationScope],
+      policies: policyIds
+    })
   }
 }
 
