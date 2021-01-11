@@ -41,14 +41,6 @@
   "roles": {
     "realm": [
       {
-        "id": "87be5b72-6f45-4db0-aed1-57e252111b42",
-        "name": "developer",
-        "composite": false,
-        "clientRole": false,
-        "containerId": "keycloak-connect-graphql",
-        "attributes": {}
-      },
-      {
         "id": "9bb4b53c-632a-46c3-b6c9-e5f261ff6af1",
         "name": "offline_access",
         "description": "${role_offline-access}",
@@ -299,14 +291,6 @@
           "attributes": {}
         },
         {
-          "id": "4e5768b0-0410-4fe5-bc51-657ab416f938",
-          "name": "developer",
-          "composite": false,
-          "clientRole": true,
-          "containerId": "9e4ad964-80b3-4daf-8917-7801f892ceef",
-          "attributes": {}
-        },
-        {
           "id": "d3e4b174-d5fe-4206-bf32-7566af96e4e3",
           "name": "uma_protection",
           "composite": false,
@@ -316,24 +300,7 @@
         }
       ],
       "admin-cli": [],
-      "keycloak-connect-graphql-bearer": [
-        {
-          "id": "575150a5-7829-42d9-8e15-4fc268683eca",
-          "name": "admin",
-          "composite": false,
-          "clientRole": true,
-          "containerId": "03427473-d69e-4551-baf0-4b0fce5f38fd",
-          "attributes": {}
-        },
-        {
-          "id": "22b3f239-7d56-4605-932f-95bd9971444c",
-          "name": "developer",
-          "composite": false,
-          "clientRole": true,
-          "containerId": "03427473-d69e-4551-baf0-4b0fce5f38fd",
-          "attributes": {}
-        }
-      ],
+      "keycloak-connect-graphql-bearer": [],
       "account-console": [],
       "broker": [
         {
@@ -478,34 +445,6 @@
   "webAuthnPolicyPasswordlessCreateTimeout": 0,
   "webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister": false,
   "webAuthnPolicyPasswordlessAcceptableAaguids": [],
-  "users": [
-    {
-      "id": "b476fa6d-1261-4955-b6e6-2b87ca69edd6",
-      "createdTimestamp": 1609243004980,
-      "username": "service-account-keycloak-connect-graphql-resource-server",
-      "enabled": true,
-      "totp": false,
-      "emailVerified": false,
-      "serviceAccountClientId": "keycloak-connect-graphql-resource-server",
-      "disableableCredentialTypes": [],
-      "requiredActions": [],
-      "realmRoles": [
-        "offline_access",
-        "uma_authorization"
-      ],
-      "clientRoles": {
-        "account": [
-          "manage-account",
-          "view-profile"
-        ],
-        "keycloak-connect-graphql-resource-server": [
-          "uma_protection"
-        ]
-      },
-      "notBefore": 0,
-      "groups": []
-    }
-  ],
   "scopeMappings": [
     {
       "clientScope": "offline_access",
@@ -1415,110 +1354,6 @@
                 "name": "write"
               }
             ]
-          }
-        ],
-        "policies": [
-          {
-            "id": "631aa1d0-ec84-488c-ae82-97e36650ad11",
-            "name": "Default Policy",
-            "description": "A policy that grants access only for users within this realm",
-            "type": "js",
-            "logic": "POSITIVE",
-            "decisionStrategy": "AFFIRMATIVE",
-            "config": {
-              "code": "// by default, grants any permission associated with this policy\n$evaluation.grant();\n"
-            }
-          },
-          {
-            "id": "3844dc43-a0d8-4181-b9db-9582cad42e1e",
-            "name": "admins policy",
-            "description": "",
-            "type": "role",
-            "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
-            "config": {
-              "roles": "[{\"id\":\"admin\",\"required\":false}]"
-            }
-          },
-          {
-            "id": "10a0f7a1-fd56-4b00-9666-0ab468fe614b",
-            "name": "editors policy",
-            "description": "",
-            "type": "role",
-            "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
-            "config": {
-              "roles": "[{\"id\":\"keycloak-connect-graphql-resource-server/editor\",\"required\":false}]"
-            }
-          },
-          {
-            "id": "b710070f-6c9e-40e7-9f5e-ab8b9e584a84",
-            "name": "developers policy",
-            "type": "role",
-            "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
-            "config": {
-              "roles": "[{\"id\":\"developer\",\"required\":false}]"
-            }
-          },
-          {
-            "id": "60989fda-ed21-47b7-a467-7a0f8114c7af",
-            "name": "Default Permission",
-            "description": "A permission that applies to the default resource type",
-            "type": "resource",
-            "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
-            "config": {
-              "defaultResourceType": "urn:keycloak-connect-graphql-resource-server:resources:default",
-              "applyPolicies": "[\"Default Policy\"]"
-            }
-          },
-          {
-            "id": "353a9508-ba51-436d-9e2c-23e020c5d16d",
-            "name": "write article",
-            "type": "scope",
-            "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
-            "config": {
-              "resources": "[\"Article\"]",
-              "scopes": "[\"write\"]",
-              "applyPolicies": "[\"developers policy\"]"
-            }
-          },
-          {
-            "id": "7086e1a1-9677-4cb6-9c87-032fb6424eec",
-            "name": "delete article",
-            "type": "scope",
-            "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
-            "config": {
-              "scopes": "[\"delete\"]",
-              "applyPolicies": "[\"admins policy\"]"
-            }
-          },
-          {
-            "id": "2b656234-7898-44fd-8286-c5078e2101a9",
-            "name": "publish article",
-            "type": "scope",
-            "logic": "POSITIVE",
-            "decisionStrategy": "UNANIMOUS",
-            "config": {
-              "resources": "[\"Article\"]",
-              "scopes": "[\"publish\"]",
-              "applyPolicies": "[\"editors policy\"]"
-            }
-          },
-          {
-            "id": "2ecb26aa-0c7e-4ea5-82c9-575e54703be3",
-            "name": "read article",
-            "type": "scope",
-            "logic": "POSITIVE",
-            "decisionStrategy": "AFFIRMATIVE",
-            "config": {
-              "resources": "[\"Article\"]",
-              "scopes": "[\"view\"]",
-              "applyPolicies": "[\"editors policy\",\"developers policy\",\"admins policy\"]"
-            }
           }
         ],
         "scopes": [
@@ -3023,10 +2858,7 @@
   "resetCredentialsFlow": "reset credentials",
   "clientAuthenticationFlow": "clients",
   "dockerAuthenticationFlow": "docker auth",
-  "attributes": {
-    "clientSessionIdleTimeout": "0",
-    "clientSessionMaxLifespan": "0"
-  },
-  "keycloakVersion": "11.0.1",
+  "attributes": {},
+  "keycloakVersion": "10.0.2",
   "userManagedAccessAllowed": false
 }
