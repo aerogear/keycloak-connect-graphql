@@ -65,7 +65,7 @@ const server = new ApolloServer({
   resolvers,
   context: ({ req }) => {
     return {
-      kauth: new KeycloakContext({ req }) // 3. add the KeycloakContext to `kauth`
+      kauth: new KeycloakContext({ req }, keycloak) // 3. add the KeycloakContext to `kauth`
     }
   }
 })
@@ -79,13 +79,13 @@ app.listen({ 4000 }, () =>
 
 In this example `keycloak.middleware()` is used on the GraphQL endpoint. This allows for **Authentication and Authorization at the GraphQL Layer**. `keycloak.middleware` parses user token information if found, but will not block unauthenticated requests. This approach gives us the flexibility to implement authentication on individual Queries, Mutations and Fields.
 
-## Using @auth and @hasRole directives (Apollo Server only)
+## Using @auth, @hasRole and @hasPermission directives (Apollo Server only)
 
 In Apollo Server, the `@auth`, `@hasRole` and `@hasPermission` directives can be used directly on the schema.
 This declarative approach means auth logic is never mixed with business logic.
 
 ```js
-
+const Keycloak = require('keycloak-connect')
 const { KeycloakContext, KeycloakTypeDefs, KeycloakSchemaDirectives } = require('keycloak-connect-graphql')
 
 const typeDefs = gql`
@@ -101,6 +101,7 @@ const typeDefs = gql`
 
   type Mutation {
     publishArticle(title: String!, content: String!): Article! @hasRole(role: "editor")
+	unpublishArticle(title: String!):Boolean @hasPermission(resources: ["Article:publish","Article:delete"])
   }
 `
 
@@ -114,9 +115,15 @@ const resolvers = {
     publishArticle: (object, args, context, info) => {
       const user = context.kauth.accessToken.content // get the user details from the access token
       return Database.createArticle(args.title, args.content, user)
+    },
+	unpublishArticle: (object, args, context, info) => {
+	  const user = context.kauth.accessToken.content
+      return Database.deleteArticle(args.title, user)
     }
   }
 }
+
+const keycloak = new Keycloak()
 
 const server = new ApolloServer({
   typeDefs: [KeycloakTypeDefs, typeDefs], // 1. Add the Keycloak Type Defs
@@ -124,7 +131,7 @@ const server = new ApolloServer({
   resolvers,
   context: ({ req }) => {
     return {
-      kauth: new KeycloakContext({ req }) // 3. add the KeycloakContext to `kauth`
+      kauth: new KeycloakContext({ req }, keycloak) // 3. add the KeycloakContext to `kauth`
     }
   }
 })
@@ -134,11 +141,12 @@ In this example a number of things are happening:
 
 1. `@auth` is applied to the `listArticles` Query. This means a user must be authenticated for this Query.
 2. `@hasRole(role: "editor")` is applied to the `publishArticle` Mutation. This means the keycloak user must have the editor *client role* in keycloak
-3. The `publishArticle` resolver demonstrates how `context.kauth` can be used to get the keycloak user details
+3. `@hasPermission(resources: ["Article:publish","Article:delete"])` is applied to `unpublishArticle` Mutation. This means keycloak user must have all permissions given in resources array.
+4. The `publishArticle` resolver demonstrates how `context.kauth` can be used to get the keycloak user details
 
-### `auth` and `hasRole` middlewares.
+### `auth`,`hasRole` and `hasPermission` middlewares.
 
-`keycloak-connect-graphql` also exports the `auth` and `hasRole` logic directly. They can be thought of as middlewares that wrap your business logic resolvers. This is useful if you don't have a clear way to use schema directives (e.g. when using `graphql-express`).
+`keycloak-connect-graphql` also exports the `auth` ,`hasRole` and `hasPermission` logic directly. They can be thought of as middlewares that wrap your business logic resolvers. This is useful if you don't have a clear way to use schema directives (e.g. when using `graphql-express`).
 
 ```js
 const { auth, hasRole } = require('keycloak-connect-graphql')
@@ -149,6 +157,7 @@ const resolvers = {
   },
   mutation: {
     publishArticle: hasRole('editor')(publishArticleResolver)
+    unpublishArticle: hasPermission(['Article:publish','Article:delete'])(unpublishArticleResolver)
   }
 }
 ```
@@ -175,6 +184,21 @@ By default, hasRole checks for keycloak client roles.
 It also is possible to check for realm roles and application roles.
 * `hasRole('realm:admin')` will check the logged in user has the admin realm role
 * `hasRole('some-other-app:admin')` will check the loged in user has the admin realm role in a different application
+
+### hasPermission Usage and Options
+
+**`@hasPermission` directive**
+
+The syntax for the `@hasPermission` schema directive is `@hasPermission(resources: "resource:scope")` or  `@hasPermission(resources: "resource")` because a scope is  optional or for multiple resources  `@hasRole(resources: ["array", "of", "resources"])`, use colon to separate name of the resource and its scope, which is an optional parameter.
+
+**`hasPermission`**
+
+* The usage for the exported `hasPermission` function is `hasPremission('resource:scope')` or `hasPermission(['array', 'of', 'resources'])`, use colon to separate name of the resource and its scope, which is an optional parameter.
+
+Both the `@hasPermission` schema directive and the exported `hasPermission` function work exactly the same.
+
+* If a single string is provided, it returns true if the keycloak user has a permission for requested resource and its scope, if the scope is provided.
+* If an array of strings is provided, it returns true if the keycloak user has **all** requested permissions.
 
 ### Error Codes
 
@@ -367,7 +391,7 @@ const gateway = new ApolloGateway({
 See the example project for [Apollo Federation with Keycloak](https://github.com/ilmimris/apollofederation-keycloak-demo).
 
 > Apollo Federation does not currently support GraphQL subscription operations.
- 
+
 ## Examples
 
 The `examples` folder contains runnable examples that demonstrate the various ways to use this library.
@@ -375,6 +399,7 @@ The `examples` folder contains runnable examples that demonstrate the various wa
 * `examples/basic.js` - Shows the basic setup needed to use the library. Uses `keycloak.connect()` to require authentication on the entire GraphQL API.
 * `examples/advancedAuth` - Shows how to use the `@auth` and `@hasRole` schema directives to apply auth at the GraphQL layer.
 * `examples/authMiddlewares` - Shows usage of the `auth` and `hasRole` middlewares.
+* `examples/resourceBasedAuht` - Shows how to use `@hasPermission` middleware.
 * `subscriptions` - Shows basic subscriptions setup, requiring all subscriptions to be authenticated.
 * `subscriptionsAdvanced` - Shows subscriptions that use the `auth` and `hasRole` middlewares directly on subscription resolvers.
 

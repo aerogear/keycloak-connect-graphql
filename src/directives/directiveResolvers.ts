@@ -116,3 +116,59 @@ export const hasRole = (roles: Array<string>) => (next: Function) => (...params:
 
   return next.apply( null, params )
 }
+
+/**
+ *
+ * @param permissions - The permission or array of permissions you want to authorize the user against.
+ *
+ * Checks if the authenticated keycloak user has the requested permissions.
+ * If the user has all requested permissions, the next resolver is called.
+ * If the user does not have all requested permissions, an error is thrown.
+ *
+ * Example usage:
+ *
+ * ```javascript
+ * // perform the standard keycloak-connect middleware setup on our app
+ * const { keycloak } = configureKeycloak(app, graphqlPath)
+ * const { hasPermission } = require('keycloak-connect-graphql')
+ *
+ * const typeDefs = gql`
+ *   type Query {
+ *     hello: String
+ *   }
+ * `
+ *
+ * const hello = (root, args, context, info) => 'Hello World'
+ *
+ * const resolvers = {
+ *   hello: hasPermission('Article:view')(hello)
+ * }
+ *
+ * const server = new ApolloServer({
+ *   typeDefs,
+ *   resolvers,
+ *   schemaDirectives: [KeycloakSchemaDirectives],
+ *   context: ({ req }) => {
+  *     return {
+  *       kauth: new KeycloakContext({ req }, keycloak)
+  *     }
+  *   }
+ * })
+ * ```
+ */
+export const hasPermission = (permissions: Array<string>) => (next: Function) => async (...params: any[]) => {
+  let context = params[2]
+  if (!context[CONTEXT_KEY] || !context[CONTEXT_KEY].isAuthenticated()) {
+    const error: any = new Error(`User not Authenticated`);
+    error.code = "UNAUTHENTICATED"
+    throw error
+  }
+
+  if (!await context.kauth.hasPermission(permissions)) {
+    const error: any = new Error(`User is not authorized. Must have the following permissions: [${permissions}]`);
+    error.code = "FORBIDDEN"
+    throw error
+  }
+
+  return next.apply( null, params )
+}

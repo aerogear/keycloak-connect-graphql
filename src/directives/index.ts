@@ -1,5 +1,4 @@
-import { SchemaDirectiveVisitor } from '@graphql-tools/utils'
-import { HasRoleDirective, AuthDirective } from './schemaDirectiveVisitors'
+import { HasRoleDirective, AuthDirective, HasPermissionDirective } from './schemaDirectiveVisitors'
 
 // Using any as there is only theoretical incompatiblity between graphql-tools and apollo library
 export type SchemaDirectiveMap = Record<string, any>
@@ -34,7 +33,8 @@ export type SchemaDirectiveMap = Record<string, any>
  */
 export const KeycloakSchemaDirectives: SchemaDirectiveMap = {
   auth: AuthDirective,
-  hasRole: HasRoleDirective
+  hasRole: HasRoleDirective,
+  hasPermission: HasPermissionDirective
 }
 
 
