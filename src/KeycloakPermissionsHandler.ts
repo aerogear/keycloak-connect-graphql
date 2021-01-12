@@ -115,7 +115,7 @@ export class KeycloakPermissionsHandler {
         try {
             authzRequest.response_mode = undefined
             const grant = await this.keycloak.checkPermissions(authzRequest, this.req)
-            const token = grant.access_token as PermissionsToken;
+            const token = grant.access_token as PermissionsToken
             if (token && this.handlePermissions(expectedPermissions, (resource, scope) => {
                 if (!token.hasPermission(resource, scope)) {
                     return false
