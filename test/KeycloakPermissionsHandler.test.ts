@@ -1,121 +1,85 @@
 import test from 'ava'
-import Keycloak, { AuthZRequest, Grant, KeycloakConfig } from 'keycloak-connect'
-import { GrantedRequest } from '../src/KeycloakContext'
+import Keycloak, { AuthZRequest, Grant, KeycloakConfig, Token } from 'keycloak-connect'
 import * as express from 'express'
 
 import { AuthorizationConfiguration, KeycloakPermissionsHandler } from '../src/KeycloakPermissionsHandler'
 
-test('KeycloakPermissionsHandler.hasPermissions returns false when there is no kauth', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
-    const req = {
-    } as GrantedRequest
-    const config = {} as AuthorizationConfiguration
-
-    const handler = new KeycloakPermissionsHandler(keycloak, req,  config)
-    t.deepEqual(await handler.hasPermission('Article:view'), false)
-})
-
-test('KeycloakPermissionsHandler.hasPermissions returns false when there is no kauth.grant', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
-    const req = {
-        kauth: {
+test('KeycloakPermissionsHandler.hasPermissions returns false when there is no token', async (t) => {
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
         }
-    } as GrantedRequest
+    } as unknown as Keycloak.Keycloak
+    const token = undefined
     const config = {} as AuthorizationConfiguration
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req,  config)
-    t.deepEqual(await handler.hasPermission('Article:view'), false)
-})
-
-test('KeycloakPermissionsHandler.hasPermissions returns false when there is no kauth.grant.access_token', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-            }
-        }
-    } as GrantedRequest
-    const config = {} as AuthorizationConfiguration
-
-    const handler = new KeycloakPermissionsHandler(keycloak, req,  config)
+    const handler = new KeycloakPermissionsHandler(keycloak, token,  config)
     t.deepEqual(await handler.hasPermission('Article:view'), false)
 })
 
 test('KeycloakPermissionsHandler.hasPermissions returns true when resources is an empty array', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-                access_token: {
-                }
-            }
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
         }
-    } as GrantedRequest
+    } as unknown as Keycloak.Keycloak
+    const token = {
+    } as Token
     const config = {} as AuthorizationConfiguration
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req,  config)
+    const handler = new KeycloakPermissionsHandler(keycloak, token,  config)
     t.deepEqual(await handler.hasPermission([]), true)
 })
 
 test('KeycloakPermissionsHandler.hasPermissions returns true when expected resource and scope were matched', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-                access_token: {
-                    hasPermission: (r: string, s: string | undefined): boolean =>
-                    {
-                        return r === 'Article' && s === 'view'
-                    }
-                }
-            }
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
         }
-    } as unknown as GrantedRequest
+    } as unknown as Keycloak.Keycloak
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean =>
+        {
+            return r === 'Article' && s === 'view'
+        }
+    } as unknown as Token
     const config = {} as AuthorizationConfiguration
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req ,  config)
+    const handler = new KeycloakPermissionsHandler(keycloak, token ,  config)
     t.deepEqual(await handler.hasPermission('Article:view'), true)
 })
 
 test('KeycloakPermissionsHandler.hasPermissions returns true when expected resource and scope were found in array', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-                access_token: {
-                    hasPermission: (r: string, s: string | undefined): boolean =>
-                    {
-                        return r === 'Article' && s === 'view'
-                    }
-                }
-            }
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
         }
-    } as unknown as GrantedRequest
+    } as unknown as Keycloak.Keycloak
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean =>
+        {
+            return r === 'Article' && s === 'view'
+        }
+    } as unknown as Token
     const config = {} as AuthorizationConfiguration
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req ,  config)
+    const handler = new KeycloakPermissionsHandler(keycloak, token ,  config)
     t.deepEqual(await handler.hasPermission(['Article:view']), true)
 })
 
 test('KeycloakPermissionsHandler.hasPermissions returns false when expected resource was not found', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-                access_token: {
-                    hasPermission: (r: string, s: string | undefined): boolean =>
-                    {
-                        return r === 'Article' && s === 'view'
-                    }
-                }
-            }
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean => {
+            return r === 'Article' && s === 'view'
         }
-    } as unknown as GrantedRequest
+    } as unknown as Token
+    
     const config = {
         resource_server_id: 'resource-server'
     } as AuthorizationConfiguration
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req ,  config)
+    const handler = new KeycloakPermissionsHandler(keycloak, token ,  config)
     t.deepEqual(await handler.hasPermission(['Article1:view']), false)
 })
 
@@ -128,64 +92,81 @@ test('KeycloakPermissionsHandler.hasPermissions returns false when expected scop
             } as KeycloakConfig
         }
     } as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-                access_token: {
-                    hasPermission: (r: string, s: string | undefined): boolean =>
-                    {
-                        return r === 'Article' && s === 'view'
-                    }
-                }
-            }
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean => {
+            return r === 'Article' && s === 'view'
         }
-    } as unknown as GrantedRequest
+    } as unknown as Token
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req, undefined)
+    const handler = new KeycloakPermissionsHandler(keycloak, token, undefined)
     t.deepEqual(await handler.hasPermission(['Article:view1']), false)
 })
 
 test('KeycloakPermissionsHandler.hasPermissions returns false when at least one resource and scope were not found', async (t) => {
     const keycloak = {} as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-                access_token: {
-                    hasPermission: (r: string, s: string | undefined): boolean =>
-                    {
-                        return r === 'Article' && s === 'view'
-                    }
-                }
-            }
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean => {
+            return r === 'Article' && s === 'view'
         }
-    } as unknown as GrantedRequest
+    } as unknown as Token
     const config = {
         resource_server_id: 'resource-server',
         claims: ()=> undefined
     } as AuthorizationConfiguration
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req , config)
+    const handler = new KeycloakPermissionsHandler(keycloak, token , config)
     t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), false)
 })
 
-test('KeycloakPermissionsHandler.hasPermissions returns true when at all resource and scope were found', async (t) => {
-    const keycloak = {} as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-                access_token: {
-                    hasPermission: (r: string, s: string | undefined): boolean =>
-                    {
-                        return r === 'Article' && (s === 'view' || s === 'delete')
-                    }
-                }
-            }
+test('KeycloakPermissionsHandler.hasPermissions returns true when all resources and scopes were found', async (t) => {
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
         }
-    } as unknown as GrantedRequest
+    } as unknown as Keycloak.Keycloak
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean => {
+            return r === 'Article' && (s === 'view' || s === 'delete')
+        }
+    } as unknown as Token
     const config = {} as AuthorizationConfiguration
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req ,  config)
+    const handler = new KeycloakPermissionsHandler(keycloak, token,  config)
     t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), true)
+})
+
+test('KeycloakPermissionsHandler.hasPermissions returns true when resource without scopes found', async (t) => {
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
+        }
+    } as unknown as Keycloak.Keycloak
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean => {
+            return r === 'Article'
+        }
+    } as unknown as Token
+    const config = {} as AuthorizationConfiguration
+
+    const handler = new KeycloakPermissionsHandler(keycloak, token,  config)
+    t.deepEqual(await handler.hasPermission(['Article']), true)
+})
+
+test('KeycloakPermissionsHandler.hasPermissions returns true when resource name contains ":" and scope is found', async (t) => {
+    const keycloak = {
+        getConfig: (): string => {
+            return 'resource-server'
+        }
+    } as unknown as Keycloak.Keycloak
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean => {
+            return r === 'Article:123456' && s === 'read'
+        }
+    } as unknown as Token
+    const config = {} as AuthorizationConfiguration
+
+    const handler = new KeycloakPermissionsHandler(keycloak, token,  config)
+    t.deepEqual(await handler.hasPermission(['Article:123456:read']), true)
 })
 
 test('KeycloakPermissionsHandler.hasPermissions uses claims defined in configuration when it asks keycloak to checkPermissions', async (t) => {
@@ -206,20 +187,14 @@ test('KeycloakPermissionsHandler.hasPermissions uses claims defined in configura
             })
         }
     } as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-                access_token: {
-                    hasPermission: (r: string, s: string | undefined): boolean => {
-                        return false
-                    }
-                }
-            }
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean => {
+            return false
         }
-    } as unknown as GrantedRequest
+    } as unknown as Token
     const config = {
         resource_server_id: 'resource-server',
-        claims: (request: GrantedRequest) => {
+        claims: (request: express.Request) => {
             return {
                 claim1: 'claim1',
                 claim2: 'claim2'
@@ -227,10 +202,9 @@ test('KeycloakPermissionsHandler.hasPermissions uses claims defined in configura
         }
     } as AuthorizationConfiguration
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req ,  config)
+    const handler = new KeycloakPermissionsHandler(keycloak, token ,  config)
     t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), true)
 })
-
 
 test('KeycloakPermissionsHandler.hasPermissions returns true when access token from authorization request returns true', async (t) => {
     const keycloak = {
@@ -247,22 +221,16 @@ test('KeycloakPermissionsHandler.hasPermissions returns true when access token f
             })
         }
     } as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-                access_token: {
-                    hasPermission: (r: string, s: string | undefined): boolean => {
-                        return false
-                    }
-                }
-            }
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean => {
+            return false
         }
-    } as unknown as GrantedRequest
+    } as unknown as Token
     const config = {
         resource_server_id: 'resource-server'
     } as AuthorizationConfiguration
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req, config)
+    const handler = new KeycloakPermissionsHandler(keycloak, token, config)
     t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), true)
 })
 
@@ -282,21 +250,15 @@ test('KeycloakPermissionsHandler.hasPermissions returns false when access token 
             })
         }
     } as Keycloak.Keycloak
-    const req = {
-        kauth: {
-            grant: {
-                access_token: {
-                    hasPermission: (r: string, s: string | undefined): boolean => {
-                        return false
-                    }
-                }
-            }
+    const token = {
+        hasPermission: (r: string, s: string | undefined): boolean => {
+            return false
         }
-    } as unknown as GrantedRequest
+    } as unknown as Token
     const config = {
         resource_server_id: 'resource-server'
     } as AuthorizationConfiguration
 
-    const handler = new KeycloakPermissionsHandler(keycloak, req, config)
+    const handler = new KeycloakPermissionsHandler(keycloak, token, config)
     t.deepEqual(await handler.hasPermission(['Article:view', 'Article:delete']), false)
 })

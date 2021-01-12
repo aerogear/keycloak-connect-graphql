@@ -101,7 +101,7 @@ const typeDefs = gql`
 
   type Mutation {
     publishArticle(title: String!, content: String!): Article! @hasRole(role: "editor")
-	unpublishArticle(title: String!):Boolean @hasPermission(resources: ["Article:publish","Article:delete"])
+    unpublishArticle(title: String!):Boolean @hasPermission(resources: ["Article:publish","Article:delete"])
   }
 `
 
@@ -189,11 +189,11 @@ It also is possible to check for realm roles and application roles.
 
 **`@hasPermission` directive**
 
-The syntax for the `@hasPermission` schema directive is `@hasPermission(resources: "resource:scope")` or  `@hasPermission(resources: "resource")` because a scope is  optional or for multiple resources  `@hasRole(resources: ["array", "of", "resources"])`, use colon to separate name of the resource and its scope, which is an optional parameter.
+The syntax for the `@hasPermission` schema directive is `@hasPermission(resources: "resource:scope")` or  `@hasPermission(resources: "resource")` because a scope is  optional or for multiple resources `@hasPermission(resources: ["array", "of", "resources"])`, use colon to separate name of the resource and optionally its scope.
 
 **`hasPermission`**
 
-* The usage for the exported `hasPermission` function is `hasPremission('resource:scope')` or `hasPermission(['array', 'of', 'resources'])`, use colon to separate name of the resource and its scope, which is an optional parameter.
+* The usage for the exported `hasPermission` function is `hasPremission('resource:scope')` or `hasPermission(['array', 'of', 'resources'])`, use colon to separate name of the resource and optionally its scope.
 
 Both the `@hasPermission` schema directive and the exported `hasPermission` function work exactly the same.
 
@@ -269,7 +269,7 @@ The `auth` and `hasRole` middlewares can be used on individual subscriptions. Us
 const keycloakSubscriptionHandler = new KeycloakSubscriptionHandler({ keycloak, protect: false })
 ```
 
-When `protect` is false, an error will not be thrown during the initial websocket connection attempt if the client is not authenticated. Instead, the `auth` and `hasRole` middlewares can be used on the individual subscription resolvers.
+When `protect` is false, an error will not be thrown during the initial websocket connection attempt if the client is not authenticated. Instead, the `auth`,`hasRole` and `hasPermission` middlewares can be used on the individual subscription resolvers.
 
 ```js
 const { auth, hasRole } = require('keycloak-connect-graphql')
@@ -300,7 +300,8 @@ const resolvers = {
     messageAdded: {
       subscribe: auth(() => pubsub.asyncIterator(COMMENT_ADDED))
     },
-    alertAdded: hasRole('admin')(() => pubsub.asyncIterator(ALERT_ADDED))
+    alertAdded: hasRole('admin')(() => pubsub.asyncIterator(ALERT_ADDED)),
+    alertRemoved: hasPermission('alert:remove')(() => pubsub.asyncIterator(ALERT_REMOVED))
   }
 }
 ```
@@ -309,7 +310,8 @@ In this hypothetical application we have three subscription type that have varyi
 
 * commentAdded - Unauthenticated users can subscribe.
 * messageAdded - Only authenticated users can subscribe.
-* alertAdded - Only authenticated user with the `admin` client role can subscribe.
+* alertAdded - Only authenticated user with the `admin` client role can subscribe
+* alertRemoved - Only authenticated user with the permission on resource `alert` and scope `remove`  can subscribe
 
 ### Client Authentication over Websocket
 
@@ -401,7 +403,8 @@ The `examples` folder contains runnable examples that demonstrate the various wa
 * `examples/authMiddlewares` - Shows usage of the `auth` and `hasRole` middlewares.
 * `examples/resourceBasedAuht` - Shows how to use `@hasPermission` middleware.
 * `subscriptions` - Shows basic subscriptions setup, requiring all subscriptions to be authenticated.
-* `subscriptionsAdvanced` - Shows subscriptions that use the `auth` and `hasRole` middlewares directly on subscription resolvers.
+* `subscriptionsAdvanced` - Shows subscriptions that use the `auth` and `hasRole` middlewares directly on subscription resolvers
+* `subscriptionsResourceBasedAuth.js` - Shows subscriptions that use the `auth` and `hasPermission` middlewares directly on subscription resolvers
 
 > NOTE: Examples using unrelased code that needs to be compiled before use.
 Please run `npm run compile` to compile source code before running examples.

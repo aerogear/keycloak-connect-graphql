@@ -19,23 +19,37 @@ export interface AuthorizationConfiguration {
 }
 
 interface PermissionsToken extends Token {
+    token: string,
     hasPermission(resource: string, scope: string | undefined): boolean
 }
 
 export class KeycloakPermissionsHandler {
     private permissionsToken: PermissionsToken | undefined
-    constructor(private keycloak: Keycloak, private req: GrantedRequest, private config: AuthorizationConfiguration | undefined) {
-        this.permissionsToken = this.req?.kauth?.grant?.access_token as PermissionsToken
+    private req: GrantedRequest
+
+    constructor(private keycloak: Keycloak, token: Token | undefined, private config: AuthorizationConfiguration | undefined) {
+        this.permissionsToken = token as PermissionsToken
+        this.req = {
+            headers: {
+                authorization: "Bearer " + this.permissionsToken?.token
+            },
+            kauth: {
+                grant: {
+                    access_token: this.permissionsToken
+                }
+            }
+        } as unknown as GrantedRequest
     }
 
     private handlePermissions(permissions: string[], handler: (r: string, s: string | undefined ) => boolean) {
         for (let i = 0; i < permissions.length; i++) {
             const expected = permissions[i].split(':')
-            const resource = expected[0]
+            let resource = expected[0]
             let scope: string | undefined = undefined
 
             if (expected.length > 1) {
-                scope = expected[1]
+                resource = expected.slice(0, expected.length - 1).join(':')
+                scope = expected[expected.length - 1]
             }
 
             if (!handler(resource, scope)) {
@@ -101,7 +115,7 @@ export class KeycloakPermissionsHandler {
         try {
             authzRequest.response_mode = undefined
             const grant = await this.keycloak.checkPermissions(authzRequest, this.req)
-            const token = grant.access_token as PermissionsToken;
+            const token = grant.access_token as PermissionsToken
             if (token && this.handlePermissions(expectedPermissions, (resource, scope) => {
                 if (!token.hasPermission(resource, scope)) {
                     return false
@@ -112,7 +126,7 @@ export class KeycloakPermissionsHandler {
             }
 
             return false
-        } catch {
+        } catch (err) {
             return false
         }
     }
