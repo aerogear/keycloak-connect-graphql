@@ -101,7 +101,7 @@ const typeDefs = gql`
 
   type Mutation {
     publishArticle(title: String!, content: String!): Article! @hasRole(role: "editor")
-	unpublishArticle(title: String!):Boolean @hasPermission(resources: ["Article:publish","Article:delete"])
+    unpublishArticle(title: String!):Boolean @hasPermission(resources: ["Article:publish","Article:delete"])
   }
 `
 
@@ -189,11 +189,11 @@ It also is possible to check for realm roles and application roles.
 
 **`@hasPermission` directive**
 
-The syntax for the `@hasPermission` schema directive is `@hasPermission(resources: "resource:scope")` or  `@hasPermission(resources: "resource")` because a scope is  optional or for multiple resources  `@hasRole(resources: ["array", "of", "resources"])`, use colon to separate name of the resource and its scope, which is an optional parameter.
+The syntax for the `@hasPermission` schema directive is `@hasPermission(resources: "resource:scope")` or  `@hasPermission(resources: "resource")` because a scope is  optional or for multiple resources `@hasPermission(resources: ["array", "of", "resources"])`, use colon to separate name of the resource and optionally its scope.
 
 **`hasPermission`**
 
-* The usage for the exported `hasPermission` function is `hasPremission('resource:scope')` or `hasPermission(['array', 'of', 'resources'])`, use colon to separate name of the resource and its scope, which is an optional parameter.
+* The usage for the exported `hasPermission` function is `hasPremission('resource:scope')` or `hasPermission(['array', 'of', 'resources'])`, use colon to separate name of the resource and optionally its scope.
 
 Both the `@hasPermission` schema directive and the exported `hasPermission` function work exactly the same.
 
