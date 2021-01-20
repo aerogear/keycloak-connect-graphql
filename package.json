@@ -50,7 +50,7 @@
     "graphql": "14.6.0",
     "graphql-subscriptions": "1.1.0",
     "keycloak-request-token": "0.1.0",
-    "keycloak-admin": "^1.14.4",
+    "keycloak-admin": "1.14.4",
     "nyc": "15.1.0",
     "sinon": "9.0.2",
     "subscriptions-transport-ws": "0.9.16",
