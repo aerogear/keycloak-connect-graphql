@@ -200,6 +200,116 @@ Both the `@hasPermission` schema directive and the exported `hasPermission` func
 * If a single string is provided, it returns true if the keycloak user has a permission for requested resource and its scope, if the scope is provided.
 * If an array of strings is provided, it returns true if the keycloak user has **all** requested permissions.
 
+## Apollo Server Express 3+ Support
+
+`apollo-server-express@^3.x` no longer supports the `SchemaDirectiveVisitor` class and therefor prevents
+you from using the visitors of this library. They have adopted schema 
+[transformers functions](https://www.apollographql.com/docs/apollo-server/schema/creating-directives/) that define behavior
+on the schema fields with the directives.
+
+Remediating this is actually rather simple and gives you the option of adding a bit more authentication logic if needed,
+but will require some understanding of the inner workings of this library.
+
+To make things easy, this is an example implementation of what the transformers may look like. (Note the validation of roles and permissions
+given to their respective directives):
+
+```typescript
+import { defaultFieldResolver, GraphQLSchema } from 'graphql';
+import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
+import { auth, hasPermission, hasRole } from 'keycloak-connect-graphql';
+
+const authDirectiveTransformer = (schema: GraphQLSchema, directiveName: string = 'auth') => {
+  return mapSchema(schema, {
+    [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
+      const authDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (authDirective) {
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        fieldConfig.resolve = auth(resolve);
+      }
+      return fieldConfig;
+    }
+  });
+};
+
+export const permissionDirectiveTransformer = (schema: GraphQLSchema, directiveName: string = 'hasPermission') => {
+  return mapSchema(schema, {
+    [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
+      const permissionDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (permissionDirective) {
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        const keys = Object.keys(permissionDirective);
+        let resources;
+        if (keys.length === 1 && keys[0] === 'resources') {
+          resources = permissionDirective[keys[0]];
+          if (typeof resources === 'string') resources = [resources];
+          if (Array.isArray(resources)) {
+            resources = resources.map((val: any) => String(val));
+          } else {
+            throw new Error('invalid hasRole args. role must be a String or an Array of Strings');
+          }
+        } else {
+          throw Error("invalid hasRole args. must contain only a 'role argument");
+        }
+        fieldConfig.resolve = hasPermission(resources)(resolve);
+      }
+      return fieldConfig;
+    }
+  });
+};
+
+export const roleDirectiveTransformer = (schema: GraphQLSchema, directiveName: string = 'hasRole') => {
+  return mapSchema(schema, {
+    [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
+      const roleDirective = getDirective(schema, fieldConfig, directiveName)?.[0];
+      if (roleDirective) {
+        const { resolve = defaultFieldResolver } = fieldConfig;
+        const keys = Object.keys(roleDirective);
+        let role;
+        if (keys.length === 1 && keys[0] === 'role') {
+          role = roleDirective[keys[0]];
+          if (typeof role === 'string') role = [role];
+          if (Array.isArray(role)) {
+            role = role.map((val: any) => String(val));
+          } else {
+            throw new Error('invalid hasRole args. role must be a String or an Array of Strings');
+          }
+        } else {
+          throw Error("invalid hasRole args. must contain only a 'role argument");
+        }
+        fieldConfig.resolve = hasRole(role)(resolve);
+      }
+      return fieldConfig;
+    }
+  });
+};
+
+export const applyDirectiveTransformers = (schema: GraphQLSchema) => {
+  return authDirectiveTransformer(roleDirectiveTransformer(permissionDirectiveTransformer(schema)));
+};
+```
+
+With your transformers defined, apply them on the schema and continue configuring your server instance:
+```typescript
+...
+let schema = makeExecutableSchema({
+  typeDefs,
+  resolvers
+});
+
+schema = applyDirectiveTransformers(schema);
+
+// Now just passing the schema in the options, configurting the context with Keycloak as before.
+const server = new ApolloServer({
+  schema,
+  context: ({ req }) => {
+    return {
+      kauth: new KeycloakContext({ req }, keycloak)
+    };
+  }
+});
+...
+```
+
 ### Error Codes
 
 Library will return specific GraphQL errors to the client that can
