@@ -34,7 +34,7 @@
     "examples:seed": "node scripts/initKeycloak.js"
   },
   "dependencies": {
-    "@graphql-tools/utils": "7.2.3"
+    "@graphql-tools/utils": "9.2.1"
   },
   "devDependencies": {
     "@types/express-session": "1.17.3",
